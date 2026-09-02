@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build output
+dist/
+build/
+
+# env files (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# logs
+*.log
+npm-debug.log*
+
+# editor / OS
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# testing / coverage
+coverage/
+
+# misc
+*.tsbuildinfo
