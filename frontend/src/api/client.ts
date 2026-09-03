@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+
 export class ApiError extends Error {
   status: number;
 
@@ -30,6 +32,9 @@ interface RequestOptions {
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
+    // lets the backend translate error messages into the UI's current
+    // language (see backend/src/common/filters/i18n-exception.filter.ts)
+    'Accept-Language': i18n.language ?? 'uk',
   };
 
   if (options.token) {

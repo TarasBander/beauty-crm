@@ -5,6 +5,6 @@ export class ChangePasswordDto {
   currentPassword: string;
 
   @IsString()
-  @MinLength(8, { message: 'Пароль має містити щонайменше 8 символів' })
+  @MinLength(8)
   newPassword: string;
 }

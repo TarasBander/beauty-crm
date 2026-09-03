@@ -1,6 +1,8 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
+import { I18nExceptionFilter } from './common/filters/i18n-exception.filter.js';
+import { validationExceptionFactory } from './common/validation-exception.factory.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +15,11 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
+      exceptionFactory: validationExceptionFactory,
     }),
   );
+
+  app.useGlobalFilters(new I18nExceptionFilter());
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

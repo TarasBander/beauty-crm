@@ -12,7 +12,7 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @MinLength(8, { message: 'Пароль має містити щонайменше 8 символів' })
+  @MinLength(8)
   password: string;
 
   @IsString()

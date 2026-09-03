@@ -17,12 +17,12 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user || !user.isActive) {
-      throw new UnauthorizedException('Невірний email або пароль');
+      throw new UnauthorizedException({ messageKey: 'auth.invalidCredentials' });
     }
 
     const passwordMatches = await bcrypt.compare(password, user.passwordHash);
     if (!passwordMatches) {
-      throw new UnauthorizedException('Невірний email або пароль');
+      throw new UnauthorizedException({ messageKey: 'auth.invalidCredentials' });
     }
 
     return user;
@@ -53,7 +53,9 @@ export class AuthService {
       user.passwordHash,
     );
     if (!passwordMatches) {
-      throw new UnauthorizedException('Поточний пароль невірний');
+      throw new UnauthorizedException({
+        messageKey: 'auth.invalidCurrentPassword',
+      });
     }
 
     await this.usersService.updatePassword(userId, newPassword);

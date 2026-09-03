@@ -22,7 +22,7 @@ export class UsersService {
   async create(dto: CreateUserDto): Promise<User> {
     const existing = await this.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException('Користувач з таким email вже існує');
+      throw new ConflictException({ messageKey: 'users.alreadyExists' });
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
@@ -49,7 +49,7 @@ export class UsersService {
   async findById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException('Користувача не знайдено');
+      throw new NotFoundException({ messageKey: 'users.notFound' });
     }
     return user;
   }
