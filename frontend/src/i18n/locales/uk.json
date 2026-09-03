@@ -4,6 +4,7 @@
   },
   "nav": {
     "dashboard": "Дашборд",
+    "clients": "Клієнти",
     "users": "Користувачі",
     "logout": "Вийти",
     "changePassword": "Змінити пароль"
@@ -58,6 +59,33 @@
       "name": "Ім'я",
       "email": "Email",
       "role": "Роль"
+    }
+  },
+  "clients": {
+    "title": "Клієнти",
+    "addTitle": "Додати клієнта",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
+    "phone": "Телефон",
+    "email": "Email",
+    "salonName": "Салон",
+    "position": "Посада",
+    "address": "Адреса",
+    "notes": "Нотатки",
+    "assignedTo": "Відповідальний менеджер",
+    "assignedToMe": "Я ({{name}})",
+    "submit": "Створити",
+    "submitting": "Створення…",
+    "listTitle": "Список клієнтів",
+    "loading": "Завантаження…",
+    "loadError": "Помилка завантаження",
+    "createError": "Не вдалося створити клієнта",
+    "empty": "Клієнтів ще немає — додайте першого вище.",
+    "columns": {
+      "name": "Ім'я",
+      "phone": "Телефон",
+      "salon": "Салон",
+      "assignedTo": "Відповідальний"
     }
   }
 }

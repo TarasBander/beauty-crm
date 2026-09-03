@@ -66,11 +66,14 @@ body {
 
 .auth-card input,
 .user-form input,
-.user-form select {
+.user-form select,
+.user-form textarea {
   padding: 0.6rem 0.7rem;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
 }
 
 .auth-card button,

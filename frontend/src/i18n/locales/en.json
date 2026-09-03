@@ -4,6 +4,7 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "clients": "Clients",
     "users": "Users",
     "logout": "Log out",
     "changePassword": "Change password"
@@ -58,6 +59,33 @@
       "name": "Name",
       "email": "Email",
       "role": "Role"
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "addTitle": "Add client",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone",
+    "email": "Email",
+    "salonName": "Salon",
+    "position": "Position",
+    "address": "Address",
+    "notes": "Notes",
+    "assignedTo": "Assigned manager",
+    "assignedToMe": "Me ({{name}})",
+    "submit": "Create",
+    "submitting": "Creating…",
+    "listTitle": "Client list",
+    "loading": "Loading…",
+    "loadError": "Failed to load",
+    "createError": "Failed to create client",
+    "empty": "No clients yet — add the first one above.",
+    "columns": {
+      "name": "Name",
+      "phone": "Phone",
+      "salon": "Salon",
+      "assignedTo": "Assigned to"
     }
   }
 }

@@ -80,6 +80,34 @@ export interface LoginResponse {
   user: PublicUser;
 }
 
+export interface Client {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string | null;
+  salonName: string | null;
+  position: string | null;
+  address: string | null;
+  notes: string | null;
+  assignedTo: PublicUser | null;
+  createdBy: PublicUser | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateClientDto {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  salonName?: string;
+  position?: string;
+  address?: string;
+  notes?: string;
+  assignedToId?: string;
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -112,5 +140,14 @@ export const api = {
       method: 'POST',
       token,
       body: { currentPassword, newPassword },
+    }),
+
+  listClients: (token: string) => request<Client[]>('/clients', { token }),
+
+  createClient: (token: string, dto: CreateClientDto) =>
+    request<Client>('/clients', {
+      method: 'POST',
+      token,
+      body: dto,
     }),
 };

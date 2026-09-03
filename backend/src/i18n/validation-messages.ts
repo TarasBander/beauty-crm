@@ -8,6 +8,12 @@ const FIELD_LABELS: Record<string, Record<Lang, string>> = {
   firstName: { uk: "Ім'я", en: 'First name' },
   lastName: { uk: 'Прізвище', en: 'Last name' },
   role: { uk: 'Роль', en: 'Role' },
+  phone: { uk: 'Телефон', en: 'Phone' },
+  salonName: { uk: 'Салон', en: 'Salon' },
+  position: { uk: 'Посада', en: 'Position' },
+  address: { uk: 'Адреса', en: 'Address' },
+  notes: { uk: 'Нотатки', en: 'Notes' },
+  assignedToId: { uk: 'Відповідальний менеджер', en: 'Assigned manager' },
 };
 
 function fieldLabel(property: string, lang: Lang): string {

@@ -14,12 +14,14 @@ export const MESSAGES = {
     'auth.invalidCurrentPassword': 'Поточний пароль невірний',
     'users.notFound': 'Користувача не знайдено',
     'users.alreadyExists': 'Користувач з таким email вже існує',
+    'clients.notFound': 'Клієнта не знайдено',
   },
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
     'auth.invalidCurrentPassword': 'Current password is incorrect',
     'users.notFound': 'User not found',
     'users.alreadyExists': 'A user with this email already exists',
+    'clients.notFound': 'Client not found',
   },
 } as const satisfies Record<Lang, Record<string, string>>;
 
