@@ -110,6 +110,41 @@ export interface CreateClientDto {
 
 export type UpdateClientDto = Partial<CreateClientDto>;
 
+export type DealStage = 'new' | 'contacted' | 'proposal' | 'negotiation' | 'won' | 'lost';
+
+export const DEAL_STAGE_ORDER: DealStage[] = [
+  'new',
+  'contacted',
+  'proposal',
+  'negotiation',
+  'won',
+  'lost',
+];
+
+export interface Deal {
+  id: string;
+  title: string;
+  amount: number;
+  stage: DealStage;
+  client: Client;
+  assignedTo: PublicUser | null;
+  createdBy: PublicUser | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDealDto {
+  title: string;
+  amount: number;
+  clientId: string;
+  stage?: DealStage;
+  assignedToId?: string;
+  notes?: string;
+}
+
+export type UpdateDealDto = Partial<CreateDealDto>;
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -157,6 +192,22 @@ export const api = {
 
   updateClient: (token: string, id: string, dto: UpdateClientDto) =>
     request<Client>(`/clients/${id}`, {
+      method: 'PATCH',
+      token,
+      body: dto,
+    }),
+
+  listDeals: (token: string) => request<Deal[]>('/deals', { token }),
+
+  createDeal: (token: string, dto: CreateDealDto) =>
+    request<Deal>('/deals', {
+      method: 'POST',
+      token,
+      body: dto,
+    }),
+
+  updateDeal: (token: string, id: string, dto: UpdateDealDto) =>
+    request<Deal>(`/deals/${id}`, {
       method: 'PATCH',
       token,
       body: dto,

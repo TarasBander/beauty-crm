@@ -14,6 +14,10 @@ const FIELD_LABELS: Record<string, Record<Lang, string>> = {
   address: { uk: 'Адреса', en: 'Address' },
   notes: { uk: 'Нотатки', en: 'Notes' },
   assignedToId: { uk: 'Відповідальний менеджер', en: 'Assigned manager' },
+  title: { uk: 'Назва угоди', en: 'Deal title' },
+  amount: { uk: 'Сума', en: 'Amount' },
+  clientId: { uk: 'Клієнт', en: 'Client' },
+  stage: { uk: 'Стадія', en: 'Stage' },
 };
 
 function fieldLabel(property: string, lang: Lang): string {
@@ -49,6 +53,12 @@ const TEMPLATES: Record<string, Template> = {
     lang === 'uk'
       ? `Поле "${field}" містить недопустиме значення`
       : `"${field}" has an invalid value`,
+  isNumber: (field, _args, lang) =>
+    lang === 'uk' ? `Поле "${field}" має бути числом` : `"${field}" must be a number`,
+  min: (field, args, lang) =>
+    lang === 'uk'
+      ? `Поле "${field}" має бути не менше ${args[0] ?? '?'}`
+      : `"${field}" must be at least ${args[0] ?? '?'}`,
 };
 
 export function translateValidationIssue(issue: ValidationIssue, lang: Lang): string {

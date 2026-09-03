@@ -5,6 +5,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ClientsModule } from './clients/clients.module.js';
+import { DealsModule } from './deals/deals.module.js';
 import { HealthModule } from './health/health.module.js';
 import { UsersModule } from './users/users.module.js';
 
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     AuthModule,
     ClientsModule,
+    DealsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

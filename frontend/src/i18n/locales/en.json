@@ -5,6 +5,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "clients": "Clients",
+    "deals": "Pipeline",
     "users": "Users",
     "logout": "Log out",
     "changePassword": "Change password"
@@ -100,6 +101,33 @@
       "createdBy": "Created by",
       "createdAt": "Created at",
       "updatedAt": "Last updated"
+    }
+  },
+  "deals": {
+    "title": "Sales pipeline",
+    "addTitle": "New deal",
+    "noClientsHint": "Add a client on the Clients page first — a deal can only be created for an existing client.",
+    "field": {
+      "title": "Deal title",
+      "amount": "Amount (UAH)",
+      "client": "Client",
+      "selectClient": "Select a client",
+      "assignedTo": "Assigned manager",
+      "notes": "Notes"
+    },
+    "submit": "Create",
+    "submitting": "Creating…",
+    "loading": "Loading…",
+    "loadError": "Failed to load deals",
+    "createError": "Failed to create deal",
+    "emptyColumn": "No deals",
+    "stage": {
+      "new": "New",
+      "contacted": "Contacted",
+      "proposal": "Proposal sent",
+      "negotiation": "Negotiation",
+      "won": "Won",
+      "lost": "Lost"
     }
   }
 }

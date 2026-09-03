@@ -7,6 +7,7 @@ import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { ClientDetailPage } from './pages/ClientDetailPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { DealsPage } from './pages/DealsPage'
 import { LoginPage } from './pages/LoginPage'
 import { UsersPage } from './pages/UsersPage'
 
@@ -41,6 +42,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <ClientDetailPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/deals"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <DealsPage />
               </Layout>
             </ProtectedRoute>
           }

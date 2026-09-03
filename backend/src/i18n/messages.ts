@@ -15,6 +15,7 @@ export const MESSAGES = {
     'users.notFound': 'Користувача не знайдено',
     'users.alreadyExists': 'Користувач з таким email вже існує',
     'clients.notFound': 'Клієнта не знайдено',
+    'deals.notFound': 'Угоду не знайдено',
   },
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
@@ -22,6 +23,7 @@ export const MESSAGES = {
     'users.notFound': 'User not found',
     'users.alreadyExists': 'A user with this email already exists',
     'clients.notFound': 'Client not found',
+    'deals.notFound': 'Deal not found',
   },
 } as const satisfies Record<Lang, Record<string, string>>;
 
