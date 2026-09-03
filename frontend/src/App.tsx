@@ -9,6 +9,7 @@ import { ClientsPage } from './pages/ClientsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { DealsPage } from './pages/DealsPage'
 import { LoginPage } from './pages/LoginPage'
+import { TasksPage } from './pages/TasksPage'
 import { UsersPage } from './pages/UsersPage'
 
 function App() {
@@ -52,6 +53,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <DealsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <TasksPage />
               </Layout>
             </ProtectedRoute>
           }

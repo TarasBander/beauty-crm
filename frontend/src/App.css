@@ -357,3 +357,49 @@ body {
   font-size: 0.8rem;
   font-family: inherit;
 }
+
+/* --- Tasks page --- */
+
+.task-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.task-filter-row h2 {
+  margin: 0;
+}
+
+.task-filter-tabs {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.task-filter-tabs button {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.task-filter-tabs button.active {
+  background: #a8496c;
+  border-color: #a8496c;
+  color: #fff;
+}
+
+.task-row-done td {
+  color: #aaa;
+  text-decoration: line-through;
+}
+
+.task-overdue {
+  color: #c0392b;
+  font-weight: 600;
+  text-decoration: none;
+}

@@ -6,6 +6,7 @@
     "dashboard": "Dashboard",
     "clients": "Clients",
     "deals": "Pipeline",
+    "tasks": "Tasks",
     "users": "Users",
     "logout": "Log out",
     "changePassword": "Change password"
@@ -128,6 +129,39 @@
       "negotiation": "Negotiation",
       "won": "Won",
       "lost": "Lost"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "addTitle": "New task",
+    "field": {
+      "title": "Task title",
+      "description": "Description",
+      "dueDate": "Due date",
+      "assignedTo": "Assigned to",
+      "client": "Client",
+      "deal": "Deal",
+      "notLinked": "— not linked —"
+    },
+    "submit": "Create",
+    "submitting": "Creating…",
+    "loading": "Loading…",
+    "loadError": "Failed to load tasks",
+    "createError": "Failed to create task",
+    "listTitle": "Task list",
+    "empty": "No tasks yet.",
+    "markDone": "Mark as done",
+    "filter": {
+      "active": "Active",
+      "done": "Done",
+      "all": "All"
+    },
+    "columns": {
+      "title": "Title",
+      "dueDate": "Due",
+      "client": "Client",
+      "deal": "Deal",
+      "assignedTo": "Assigned to"
     }
   }
 }

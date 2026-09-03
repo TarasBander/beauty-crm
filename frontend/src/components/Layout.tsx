@@ -18,6 +18,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </NavLink>
           <NavLink to="/clients">{t('nav.clients')}</NavLink>
           <NavLink to="/deals">{t('nav.deals')}</NavLink>
+          <NavLink to="/tasks">{t('nav.tasks')}</NavLink>
           <NavLink to="/users">{t('nav.users')}</NavLink>
         </nav>
         <LanguageSwitcher />

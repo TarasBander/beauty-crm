@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { ClientsModule } from './clients/clients.module.js';
 import { DealsModule } from './deals/deals.module.js';
 import { HealthModule } from './health/health.module.js';
+import { TasksModule } from './tasks/tasks.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -34,6 +35,7 @@ import { UsersModule } from './users/users.module.js';
     AuthModule,
     ClientsModule,
     DealsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -145,6 +145,34 @@ export interface CreateDealDto {
 
 export type UpdateDealDto = Partial<CreateDealDto>;
 
+export type TaskStatus = 'pending' | 'done';
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  dueDate: string | null;
+  status: TaskStatus;
+  client: Client | null;
+  deal: Deal | null;
+  assignedTo: PublicUser | null;
+  createdBy: PublicUser | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskDto {
+  title: string;
+  description?: string;
+  dueDate?: string;
+  status?: TaskStatus;
+  clientId?: string;
+  dealId?: string;
+  assignedToId?: string;
+}
+
+export type UpdateTaskDto = Partial<CreateTaskDto>;
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -208,6 +236,22 @@ export const api = {
 
   updateDeal: (token: string, id: string, dto: UpdateDealDto) =>
     request<Deal>(`/deals/${id}`, {
+      method: 'PATCH',
+      token,
+      body: dto,
+    }),
+
+  listTasks: (token: string) => request<Task[]>('/tasks', { token }),
+
+  createTask: (token: string, dto: CreateTaskDto) =>
+    request<Task>('/tasks', {
+      method: 'POST',
+      token,
+      body: dto,
+    }),
+
+  updateTask: (token: string, id: string, dto: UpdateTaskDto) =>
+    request<Task>(`/tasks/${id}`, {
       method: 'PATCH',
       token,
       body: dto,

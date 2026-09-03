@@ -14,10 +14,16 @@ const FIELD_LABELS: Record<string, Record<Lang, string>> = {
   address: { uk: 'Адреса', en: 'Address' },
   notes: { uk: 'Нотатки', en: 'Notes' },
   assignedToId: { uk: 'Відповідальний менеджер', en: 'Assigned manager' },
-  title: { uk: 'Назва угоди', en: 'Deal title' },
+  // Shared by both Deal.title and Task.title — kept generic since this
+  // map is keyed by property name only, with no entity context.
+  title: { uk: 'Назва', en: 'Title' },
   amount: { uk: 'Сума', en: 'Amount' },
   clientId: { uk: 'Клієнт', en: 'Client' },
   stage: { uk: 'Стадія', en: 'Stage' },
+  description: { uk: 'Опис', en: 'Description' },
+  dueDate: { uk: 'Термін виконання', en: 'Due date' },
+  status: { uk: 'Статус', en: 'Status' },
+  dealId: { uk: 'Угода', en: 'Deal' },
 };
 
 function fieldLabel(property: string, lang: Lang): string {
@@ -59,6 +65,10 @@ const TEMPLATES: Record<string, Template> = {
     lang === 'uk'
       ? `Поле "${field}" має бути не менше ${args[0] ?? '?'}`
       : `"${field}" must be at least ${args[0] ?? '?'}`,
+  isDateString: (field, _args, lang) =>
+    lang === 'uk'
+      ? `Поле "${field}" має бути коректною датою`
+      : `"${field}" must be a valid date`,
 };
 
 export function translateValidationIssue(issue: ValidationIssue, lang: Lang): string {
