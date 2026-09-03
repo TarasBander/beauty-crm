@@ -12,7 +12,8 @@
     "users": "Users",
     "integrations": "Integrations",
     "logout": "Log out",
-    "changePassword": "Change password"
+    "changePassword": "Change password",
+    "menu": "Menu"
   },
   "roles": {
     "admin": "Admin",

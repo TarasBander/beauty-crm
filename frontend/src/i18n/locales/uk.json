@@ -12,7 +12,8 @@
     "users": "Користувачі",
     "integrations": "Інтеграції",
     "logout": "Вийти",
-    "changePassword": "Змінити пароль"
+    "changePassword": "Змінити пароль",
+    "menu": "Меню"
   },
   "roles": {
     "admin": "Адмін",
