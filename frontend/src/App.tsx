@@ -3,6 +3,7 @@ import './App.css'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './auth/AuthContext'
+import { AnalyticsPage } from './pages/AnalyticsPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { ClientDetailPage } from './pages/ClientDetailPage'
 import { ClientsPage } from './pages/ClientsPage'
@@ -74,6 +75,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <PaymentsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AnalyticsPage />
               </Layout>
             </ProtectedRoute>
           }

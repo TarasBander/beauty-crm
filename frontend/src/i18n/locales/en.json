@@ -8,6 +8,7 @@
     "deals": "Pipeline",
     "tasks": "Tasks",
     "payments": "Payments",
+    "analytics": "Analytics",
     "users": "Users",
     "logout": "Log out",
     "changePassword": "Change password"
@@ -204,6 +205,33 @@
       "method": "Method",
       "status": "Status",
       "paidAt": "Paid on"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "loading": "Loading…",
+    "loadError": "Failed to load analytics",
+    "noData": "No data yet.",
+    "byStage": "Deals by stage",
+    "revenueByMonth": "Revenue by month",
+    "topClients": "Top clients by revenue",
+    "managerPerformance": "Manager performance",
+    "kpi": {
+      "clients": "Total clients",
+      "activePipeline": "In pipeline",
+      "deals": "deals",
+      "won": "Won deals",
+      "conversion": "Conversion",
+      "received": "Received",
+      "pendingPayments": "Pending payments",
+      "overdueTasks": "Overdue tasks"
+    },
+    "columns": {
+      "client": "Client",
+      "salon": "Salon",
+      "revenue": "Revenue",
+      "manager": "Manager",
+      "dealsWon": "Deals won"
     }
   }
 }

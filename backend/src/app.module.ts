@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ClientsModule } from './clients/clients.module.js';
 import { DealsModule } from './deals/deals.module.js';
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module.js';
     DealsModule,
     TasksModule,
     PaymentsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

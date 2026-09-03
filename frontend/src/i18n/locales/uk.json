@@ -8,6 +8,7 @@
     "deals": "Воронка",
     "tasks": "Задачі",
     "payments": "Платежі",
+    "analytics": "Аналітика",
     "users": "Користувачі",
     "logout": "Вийти",
     "changePassword": "Змінити пароль"
@@ -204,6 +205,33 @@
       "method": "Спосіб",
       "status": "Статус",
       "paidAt": "Дата оплати"
+    }
+  },
+  "analytics": {
+    "title": "Аналітика",
+    "loading": "Завантаження…",
+    "loadError": "Не вдалося завантажити аналітику",
+    "noData": "Даних поки немає.",
+    "byStage": "Угоди за стадіями",
+    "revenueByMonth": "Дохід за місяцями",
+    "topClients": "Топ клієнтів за доходом",
+    "managerPerformance": "Ефективність менеджерів",
+    "kpi": {
+      "clients": "Клієнтів усього",
+      "activePipeline": "У воронці",
+      "deals": "угод",
+      "won": "Виграно угод",
+      "conversion": "Конверсія",
+      "received": "Отримано коштів",
+      "pendingPayments": "Очікується оплат",
+      "overdueTasks": "Прострочені задачі"
+    },
+    "columns": {
+      "client": "Клієнт",
+      "salon": "Салон",
+      "revenue": "Дохід",
+      "manager": "Менеджер",
+      "dealsWon": "Виграних угод"
     }
   }
 }
