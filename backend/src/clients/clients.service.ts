@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateClientDto } from './dto/create-client.dto.js';
+import { UpdateClientDto } from './dto/update-client.dto.js';
 import { Client } from './entities/client.entity.js';
 
 @Injectable()
@@ -30,6 +31,31 @@ export class ClientsService {
     // `createdBy` relations — reload so the response the client sees
     // right after creating matches what a subsequent GET would return.
     return this.findById(saved.id);
+  }
+
+  async update(id: string, dto: UpdateClientDto): Promise<Client> {
+    // Make sure the client exists before touching anything (findById
+    // already throws the translated 404 if not).
+    await this.findById(id);
+
+    const patch: Partial<Client> = {};
+    if (dto.firstName !== undefined) patch.firstName = dto.firstName;
+    if (dto.lastName !== undefined) patch.lastName = dto.lastName;
+    if (dto.phone !== undefined) patch.phone = dto.phone;
+    // Optional free-text fields have no @IsNotEmpty(), so an empty string
+    // here is a deliberate "clear this field", not a validation failure —
+    // store it as null like the rest of the entity does.
+    if (dto.email !== undefined) patch.email = dto.email || null;
+    if (dto.salonName !== undefined) patch.salonName = dto.salonName || null;
+    if (dto.position !== undefined) patch.position = dto.position || null;
+    if (dto.address !== undefined) patch.address = dto.address || null;
+    if (dto.notes !== undefined) patch.notes = dto.notes || null;
+    if (dto.assignedToId !== undefined) patch.assignedToId = dto.assignedToId || null;
+
+    await this.clientsRepository.update(id, patch);
+    // Same reasoning as create(): reload so eager assignedTo/createdBy
+    // relations are populated in the response.
+    return this.findById(id);
   }
 
   findAll(): Promise<Client[]> {

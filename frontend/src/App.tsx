@@ -4,6 +4,7 @@ import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AuthProvider } from './auth/AuthContext'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
+import { ClientDetailPage } from './pages/ClientDetailPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
@@ -30,6 +31,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <ClientsPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients/:id"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <ClientDetailPage />
               </Layout>
             </ProtectedRoute>
           }

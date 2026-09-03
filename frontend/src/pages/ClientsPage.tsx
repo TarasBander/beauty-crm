@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { api, ApiError, type Client, type PublicUser } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 
@@ -199,7 +200,9 @@ export function ClientsPage() {
               {clients.map((c) => (
                 <tr key={c.id}>
                   <td>
-                    {c.firstName} {c.lastName}
+                    <Link to={`/clients/${c.id}`} className="text-link">
+                      {c.firstName} {c.lastName}
+                    </Link>
                   </td>
                   <td>{c.phone}</td>
                   <td>{c.salonName ?? '—'}</td>

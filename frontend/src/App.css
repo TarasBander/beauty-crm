@@ -246,3 +246,32 @@ body {
   color: #888;
   font-weight: 600;
 }
+
+/* --- Client detail page --- */
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.detail-item-wide {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 0.8rem;
+  color: #888;
+}

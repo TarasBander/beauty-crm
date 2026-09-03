@@ -86,6 +86,20 @@
       "phone": "Phone",
       "salon": "Salon",
       "assignedTo": "Assigned to"
+    },
+    "detail": {
+      "back": "← Back to clients",
+      "loading": "Loading…",
+      "loadError": "Failed to load client",
+      "notFound": "Client not found",
+      "edit": "Edit",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "saveError": "Failed to save changes",
+      "createdBy": "Created by",
+      "createdAt": "Created at",
+      "updatedAt": "Last updated"
     }
   }
 }

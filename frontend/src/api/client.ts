@@ -108,6 +108,8 @@ export interface CreateClientDto {
   assignedToId?: string;
 }
 
+export type UpdateClientDto = Partial<CreateClientDto>;
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -144,9 +146,18 @@ export const api = {
 
   listClients: (token: string) => request<Client[]>('/clients', { token }),
 
+  getClient: (token: string, id: string) => request<Client>(`/clients/${id}`, { token }),
+
   createClient: (token: string, dto: CreateClientDto) =>
     request<Client>('/clients', {
       method: 'POST',
+      token,
+      body: dto,
+    }),
+
+  updateClient: (token: string, id: string, dto: UpdateClientDto) =>
+    request<Client>(`/clients/${id}`, {
+      method: 'PATCH',
       token,
       body: dto,
     }),
