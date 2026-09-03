@@ -1,38 +1,201 @@
-.app {
-  max-width: 480px;
-  margin: 4rem auto;
-  padding: 0 1.5rem;
-  font-family: system-ui, sans-serif;
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f6f4f2;
+  color: #2b2b2b;
+}
+
+/* --- Auth / login page --- */
+
+.page-loading {
+  padding: 3rem;
   text-align: center;
+  color: #888;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f7e7e9, #f3ede7);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #a8496c;
 }
 
 .subtitle {
-  color: #666;
-  margin-top: -0.5rem;
+  color: #777;
+  margin: 0 0 0.5rem;
 }
 
-.status-card {
-  margin-top: 2rem;
-  padding: 1.5rem;
+.auth-card label,
+.user-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.auth-card input,
+.user-form input,
+.user-form select {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.auth-card button,
+.user-form button {
+  margin-top: 0.5rem;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 8px;
+  background: #a8496c;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.auth-card button:disabled,
+.user-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: #c0392b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* --- App layout --- */
+
+.layout {
+  min-height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.brand {
+  font-weight: 700;
+  color: #a8496c;
+}
+
+.nav {
+  display: flex;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+.nav a {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nav a.active {
+  color: #a8496c;
+  font-weight: 600;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.role-badge {
+  background: #f3e3e8;
+  color: #a8496c;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.user-menu button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* --- Users page --- */
+
+.card {
+  background: #fff;
   border-radius: 12px;
-  border: 1px solid #e2e2e2;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row label {
+  flex: 1;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 480px;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
   text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
 }
 
-.status {
-  margin: 0.4rem 0;
-}
-
-.status-ok {
-  color: #1a7f37;
-}
-
-.status-error {
-  color: #c62828;
-}
-
-.status-timestamp {
-  margin-top: 0.75rem;
-  font-size: 0.85rem;
+.users-table th {
   color: #888;
+  font-weight: 600;
 }
