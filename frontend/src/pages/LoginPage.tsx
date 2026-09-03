@@ -52,6 +52,7 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoFocus
+            maxLength={254}
           />
         </label>
 
@@ -62,6 +63,7 @@ export function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            maxLength={72}
           />
         </label>
 

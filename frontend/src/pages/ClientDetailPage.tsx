@@ -207,6 +207,7 @@ export function ClientDetailPage() {
                       value={form.firstName}
                       onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                       required
+                      maxLength={100}
                     />
                   </label>
                   <label>
@@ -215,6 +216,7 @@ export function ClientDetailPage() {
                       value={form.lastName}
                       onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                       required
+                      maxLength={100}
                     />
                   </label>
                 </div>
@@ -227,6 +229,8 @@ export function ClientDetailPage() {
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       required
+                      maxLength={20}
+                      pattern="^[+]?[0-9\s\-()]{7,20}$"
                     />
                   </label>
                   <label>
@@ -235,6 +239,7 @@ export function ClientDetailPage() {
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      maxLength={254}
                     />
                   </label>
                 </div>
@@ -245,6 +250,7 @@ export function ClientDetailPage() {
                     <input
                       value={form.salonName}
                       onChange={(e) => setForm({ ...form, salonName: e.target.value })}
+                      maxLength={200}
                     />
                   </label>
                   <label>
@@ -252,6 +258,7 @@ export function ClientDetailPage() {
                     <input
                       value={form.position}
                       onChange={(e) => setForm({ ...form, position: e.target.value })}
+                      maxLength={100}
                     />
                   </label>
                 </div>
@@ -261,6 +268,7 @@ export function ClientDetailPage() {
                   <input
                     value={form.address}
                     onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    maxLength={300}
                   />
                 </label>
 
@@ -270,6 +278,7 @@ export function ClientDetailPage() {
                     rows={3}
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    maxLength={2000}
                   />
                 </label>
 

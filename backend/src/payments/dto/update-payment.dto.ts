@@ -6,6 +6,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { PaymentMethod } from '../../common/enums/payment-method.enum.js';
@@ -26,6 +28,7 @@ export class UpdatePaymentDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(100000000)
   amount?: number;
 
   @IsOptional()
@@ -42,5 +45,6 @@ export class UpdatePaymentDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   notes?: string;
 }

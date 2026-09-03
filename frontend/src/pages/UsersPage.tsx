@@ -66,6 +66,7 @@ export function UsersPage() {
                 value={form.firstName}
                 onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                 required
+                maxLength={100}
               />
             </label>
             <label>
@@ -74,6 +75,7 @@ export function UsersPage() {
                 value={form.lastName}
                 onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                 required
+                maxLength={100}
               />
             </label>
           </div>
@@ -86,6 +88,7 @@ export function UsersPage() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
+                maxLength={254}
               />
             </label>
             <label>
@@ -95,6 +98,7 @@ export function UsersPage() {
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 minLength={8}
+                maxLength={72}
                 required
               />
             </label>
@@ -124,6 +128,7 @@ export function UsersPage() {
         {isLoadingUsers && <p>{t('users.loading')}</p>}
         {loadError && <p className="form-error">{loadError}</p>}
         {!isLoadingUsers && !loadError && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -144,6 +149,7 @@ export function UsersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

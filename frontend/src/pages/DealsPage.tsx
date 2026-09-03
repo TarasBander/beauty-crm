@@ -124,6 +124,7 @@ export function DealsPage() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
+              maxLength={200}
             />
           </label>
 
@@ -180,6 +181,7 @@ export function DealsPage() {
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              maxLength={2000}
             />
           </label>
 

@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 import { TaskStatus } from '../../common/enums/task-status.enum.js';
 
@@ -15,10 +16,12 @@ export class CreateTaskDto {
   @Transform(trim)
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   description?: string;
 
   @IsOptional()

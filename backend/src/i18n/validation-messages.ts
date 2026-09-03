@@ -57,6 +57,10 @@ const TEMPLATES: Record<string, Template> = {
     lang === 'uk'
       ? `Поле "${field}" має містити щонайменше ${args[0] ?? '?'} символів`
       : `"${field}" must be at least ${args[0] ?? '?'} characters`,
+  maxLength: (field, args, lang) =>
+    lang === 'uk'
+      ? `Поле "${field}" має містити не більше ${args[0] ?? '?'} символів`
+      : `"${field}" must be no longer than ${args[0] ?? '?'} characters`,
   isEnum: (field, _args, lang) =>
     lang === 'uk'
       ? `Поле "${field}" містить недопустиме значення`
@@ -67,10 +71,18 @@ const TEMPLATES: Record<string, Template> = {
     lang === 'uk'
       ? `Поле "${field}" має бути не менше ${args[0] ?? '?'}`
       : `"${field}" must be at least ${args[0] ?? '?'}`,
+  max: (field, args, lang) =>
+    lang === 'uk'
+      ? `Поле "${field}" має бути не більше ${args[0] ?? '?'}`
+      : `"${field}" must be no more than ${args[0] ?? '?'}`,
   isDateString: (field, _args, lang) =>
     lang === 'uk'
       ? `Поле "${field}" має бути коректною датою`
       : `"${field}" must be a valid date`,
+  matches: (field, _args, lang) =>
+    lang === 'uk'
+      ? `Поле "${field}" має недопустимий формат`
+      : `"${field}" has an invalid format`,
 };
 
 export function translateValidationIssue(issue: ValidationIssue, lang: Lang): string {

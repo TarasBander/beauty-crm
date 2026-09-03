@@ -137,6 +137,7 @@ export function AnalyticsPage() {
         <h2>{t('analytics.topClients')}</h2>
         {data.topClients.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.topClients.length > 0 && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -155,6 +156,7 @@ export function AnalyticsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
 
@@ -162,6 +164,7 @@ export function AnalyticsPage() {
         <h2>{t('analytics.managerPerformance')}</h2>
         {data.managerPerformance.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.managerPerformance.length > 0 && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -180,6 +183,7 @@ export function AnalyticsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

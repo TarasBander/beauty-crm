@@ -5,6 +5,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { DealStage } from '../../common/enums/deal-stage.enum.js';
@@ -16,10 +18,12 @@ export class CreateDealDto {
   @Transform(trim)
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(100000000)
   amount: number;
 
   @Transform(trim)
@@ -37,5 +41,6 @@ export class CreateDealDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   notes?: string;
 }

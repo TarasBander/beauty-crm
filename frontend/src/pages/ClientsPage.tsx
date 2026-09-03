@@ -90,6 +90,7 @@ export function ClientsPage() {
                 value={form.firstName}
                 onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                 required
+                maxLength={100}
               />
             </label>
             <label>
@@ -98,6 +99,7 @@ export function ClientsPage() {
                 value={form.lastName}
                 onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                 required
+                maxLength={100}
               />
             </label>
           </div>
@@ -110,6 +112,8 @@ export function ClientsPage() {
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
                 required
+                maxLength={20}
+                pattern="^[+]?[0-9\s\-()]{7,20}$"
               />
             </label>
             <label>
@@ -118,6 +122,7 @@ export function ClientsPage() {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                maxLength={254}
               />
             </label>
           </div>
@@ -128,6 +133,7 @@ export function ClientsPage() {
               <input
                 value={form.salonName}
                 onChange={(e) => setForm({ ...form, salonName: e.target.value })}
+                maxLength={200}
               />
             </label>
             <label>
@@ -135,6 +141,7 @@ export function ClientsPage() {
               <input
                 value={form.position}
                 onChange={(e) => setForm({ ...form, position: e.target.value })}
+                maxLength={100}
               />
             </label>
           </div>
@@ -144,6 +151,7 @@ export function ClientsPage() {
             <input
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
+              maxLength={300}
             />
           </label>
 
@@ -153,6 +161,7 @@ export function ClientsPage() {
               rows={3}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              maxLength={2000}
             />
           </label>
 
@@ -187,6 +196,7 @@ export function ClientsPage() {
           <p className="subtitle">{t('clients.empty')}</p>
         )}
         {!isLoadingClients && !loadError && clients.length > 0 && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -213,6 +223,7 @@ export function ClientsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

@@ -12,7 +12,7 @@ import type { ValidationIssue } from '../i18n/validation-messages.js';
  * actual wording to I18nExceptionFilter, which does see the request.
  */
 function extractArgs(constraint: string, defaultMessage: string): string[] {
-  if (constraint === 'minLength' || constraint === 'min') {
+  if (constraint === 'minLength' || constraint === 'min' || constraint === 'maxLength' || constraint === 'max') {
     const match = defaultMessage.match(/(\d+)/);
     return match ? [match[1]] : [];
   }

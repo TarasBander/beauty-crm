@@ -139,6 +139,7 @@ export function TasksPage() {
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
+              maxLength={200}
             />
           </label>
 
@@ -148,6 +149,7 @@ export function TasksPage() {
               rows={2}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
+              maxLength={2000}
             />
           </label>
 
@@ -252,6 +254,7 @@ export function TasksPage() {
           <p className="subtitle">{t('tasks.empty')}</p>
         )}
         {!isLoadingTasks && !loadError && visibleTasks.length > 0 && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -301,6 +304,7 @@ export function TasksPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

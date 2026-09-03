@@ -185,6 +185,7 @@ export function PaymentsPage() {
               rows={2}
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              maxLength={2000}
             />
           </label>
 
@@ -204,6 +205,7 @@ export function PaymentsPage() {
           <p className="subtitle">{t('payments.empty')}</p>
         )}
         {!isLoadingPayments && !loadError && payments.length > 0 && (
+          <div className="table-scroll">
           <table className="users-table">
             <thead>
               <tr>
@@ -246,6 +248,7 @@ export function PaymentsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>
