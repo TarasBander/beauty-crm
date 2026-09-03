@@ -40,4 +40,22 @@ export class AuthService {
       user: toPublicUser(user),
     };
   }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.usersService.findById(userId);
+
+    const passwordMatches = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash,
+    );
+    if (!passwordMatches) {
+      throw new UnauthorizedException('Поточний пароль невірний');
+    }
+
+    await this.usersService.updatePassword(userId, newPassword);
+  }
 }

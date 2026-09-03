@@ -19,10 +19,17 @@ body {
 
 .auth-page {
   min-height: 100vh;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f7e7e9, #f3ede7);
+}
+
+.auth-lang-switcher {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
 }
 
 .auth-card {
@@ -127,11 +134,48 @@ body {
   font-weight: 600;
 }
 
+.lang-switcher {
+  display: flex;
+  gap: 0.25rem;
+  background: #f6f4f2;
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+
+.lang-switcher button {
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.lang-switcher button.active {
+  background: #fff;
+  color: #a8496c;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 .user-menu {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-size: 0.9rem;
+}
+
+.text-link {
+  color: #a8496c;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.form-success {
+  color: #1a7f37;
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .role-badge {

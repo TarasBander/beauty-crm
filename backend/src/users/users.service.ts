@@ -53,4 +53,9 @@ export class UsersService {
     }
     return user;
   }
+
+  async updatePassword(id: string, newPassword: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await this.usersRepository.update(id, { passwordHash });
+  }
 }

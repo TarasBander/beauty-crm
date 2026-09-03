@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "Beauty CRM"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "logout": "Log out",
+    "changePassword": "Change password"
+  },
+  "roles": {
+    "admin": "Admin",
+    "sales_manager": "Sales manager"
+  },
+  "common": {
+    "loading": "Loading…"
+  },
+  "auth": {
+    "login": {
+      "subtitle": "Sign in",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "genericError": "Failed to sign in"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Change password",
+      "submitting": "Changing…",
+      "success": "Password changed successfully",
+      "mismatchError": "Passwords do not match",
+      "genericError": "Failed to change password"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}!",
+    "subtitle": "This is the starting dashboard for Beauty CRM — clients, products and deals will be added here next."
+  },
+  "users": {
+    "title": "Users",
+    "addTitle": "Add user",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email",
+    "password": "Password",
+    "role": "Role",
+    "submit": "Create",
+    "submitting": "Creating…",
+    "listTitle": "User list",
+    "loading": "Loading…",
+    "loadError": "Failed to load",
+    "createError": "Failed to create user",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role"
+    }
+  }
+}

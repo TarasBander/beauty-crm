@@ -1,0 +1,63 @@
+{
+  "app": {
+    "name": "Beauty CRM"
+  },
+  "nav": {
+    "dashboard": "Дашборд",
+    "users": "Користувачі",
+    "logout": "Вийти",
+    "changePassword": "Змінити пароль"
+  },
+  "roles": {
+    "admin": "Адмін",
+    "sales_manager": "Менеджер з продажу"
+  },
+  "common": {
+    "loading": "Завантаження…"
+  },
+  "auth": {
+    "login": {
+      "subtitle": "Вхід в систему",
+      "email": "Email",
+      "password": "Пароль",
+      "submit": "Увійти",
+      "submitting": "Вхід…",
+      "genericError": "Не вдалося увійти"
+    },
+    "changePassword": {
+      "title": "Зміна пароля",
+      "currentPassword": "Поточний пароль",
+      "newPassword": "Новий пароль",
+      "confirmPassword": "Підтвердження нового пароля",
+      "submit": "Змінити пароль",
+      "submitting": "Зміна…",
+      "success": "Пароль успішно змінено",
+      "mismatchError": "Паролі не співпадають",
+      "genericError": "Не вдалося змінити пароль"
+    }
+  },
+  "dashboard": {
+    "welcome": "Вітаємо, {{name}}!",
+    "subtitle": "Це стартовий дашборд Beauty CRM — сюди пізніше додамо клієнтів, товари та угоди."
+  },
+  "users": {
+    "title": "Користувачі",
+    "addTitle": "Додати користувача",
+    "firstName": "Ім'я",
+    "lastName": "Прізвище",
+    "email": "Email",
+    "password": "Пароль",
+    "role": "Роль",
+    "submit": "Створити",
+    "submitting": "Створення…",
+    "listTitle": "Список користувачів",
+    "loading": "Завантаження…",
+    "loadError": "Помилка завантаження",
+    "createError": "Не вдалося створити користувача",
+    "columns": {
+      "name": "Ім'я",
+      "email": "Email",
+      "role": "Роль"
+    }
+  }
+}

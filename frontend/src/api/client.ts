@@ -101,4 +101,11 @@ export const api = {
       token,
       body: dto,
     }),
+
+  changePassword: (token: string, currentPassword: string, newPassword: string) =>
+    request<{ status: string }>('/auth/change-password', {
+      method: 'POST',
+      token,
+      body: { currentPassword, newPassword },
+    }),
 };

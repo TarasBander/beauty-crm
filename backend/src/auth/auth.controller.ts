@@ -3,6 +3,7 @@ import { toPublicUser } from '../users/user.mapper.js';
 import { UsersService } from '../users/users.service.js';
 import { AuthService } from './auth.service.js';
 import { CurrentUser } from './decorators/current-user.decorator.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { AuthenticatedUser } from './jwt-payload.interface.js';
@@ -26,5 +27,20 @@ export class AuthController {
   async me(@CurrentUser() currentUser: AuthenticatedUser) {
     const user = await this.usersService.findById(currentUser.userId);
     return toPublicUser(user);
+  }
+
+  @Post('change-password')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    await this.authService.changePassword(
+      currentUser.userId,
+      dto.currentPassword,
+      dto.newPassword,
+    );
+    return { status: 'ok' };
   }
 }
