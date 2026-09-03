@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { api, ApiError, type Client, type PublicUser } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { downloadCsv } from '../utils/csv'
 
 const emptyForm = {
   firstName: '',
@@ -43,6 +44,21 @@ export function ClientsPage() {
   }
 
   useEffect(loadClients, [token])
+
+  const exportClients = () =>
+    downloadCsv(
+      'clients.csv',
+      clients.map((c) => ({
+        firstName: c.firstName,
+        lastName: c.lastName,
+        phone: c.phone,
+        email: c.email ?? '',
+        salonName: c.salonName ?? '',
+        position: c.position ?? '',
+        address: c.address ?? '',
+        assignedTo: c.assignedTo ? `${c.assignedTo.firstName} ${c.assignedTo.lastName}` : '',
+      })),
+    )
 
   useEffect(() => {
     if (!token) return
@@ -189,7 +205,14 @@ export function ClientsPage() {
       </section>
 
       <section className="card">
-        <h2>{t('clients.listTitle')}</h2>
+        <div className="task-filter-row">
+          <h2>{t('clients.listTitle')}</h2>
+          {clients.length > 0 && (
+            <button type="button" onClick={exportClients}>
+              {t('common.exportCsv')}
+            </button>
+          )}
+        </div>
         {isLoadingClients && <p>{t('clients.loading')}</p>}
         {loadError && <p className="form-error">{loadError}</p>}
         {!isLoadingClients && !loadError && clients.length === 0 && (

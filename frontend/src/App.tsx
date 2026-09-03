@@ -9,6 +9,7 @@ import { ClientDetailPage } from './pages/ClientDetailPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { DealsPage } from './pages/DealsPage'
+import { IntegrationsPage } from './pages/IntegrationsPage'
 import { LoginPage } from './pages/LoginPage'
 import { PaymentsPage } from './pages/PaymentsPage'
 import { TasksPage } from './pages/TasksPage'
@@ -95,6 +96,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <UsersPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/integrations"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <IntegrationsPage />
               </Layout>
             </ProtectedRoute>
           }

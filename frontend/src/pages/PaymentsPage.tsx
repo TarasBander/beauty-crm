@@ -9,6 +9,7 @@ import {
   type PaymentMethod,
 } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { downloadCsv } from '../utils/csv'
 
 const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'card', 'bank_transfer']
 
@@ -113,6 +114,19 @@ export function PaymentsPage() {
     return { paid, pending }
   }, [payments])
 
+  const exportPayments = () =>
+    downloadCsv(
+      'payments.csv',
+      payments.map((p) => ({
+        deal: p.deal.title,
+        client: `${p.deal.client.firstName} ${p.deal.client.lastName}`,
+        amount: p.amount,
+        method: t(`payments.method.${p.method}`),
+        status: t(`payments.status.${p.status}`),
+        paidAt: p.paidAt ?? '',
+      })),
+    )
+
   return (
     <div className="users-page">
       <h1>{t('payments.title')}</h1>
@@ -198,7 +212,14 @@ export function PaymentsPage() {
       </section>
 
       <section className="card">
-        <h2>{t('payments.listTitle')}</h2>
+        <div className="task-filter-row">
+          <h2>{t('payments.listTitle')}</h2>
+          {payments.length > 0 && (
+            <button type="button" onClick={exportPayments}>
+              {t('common.exportCsv')}
+            </button>
+          )}
+        </div>
         {isLoadingPayments && <p>{t('payments.loading')}</p>}
         {loadError && <p className="form-error">{loadError}</p>}
         {!isLoadingPayments && !loadError && payments.length === 0 && (

@@ -11,6 +11,7 @@ import {
   type PublicUser,
 } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { downloadCsv } from '../utils/csv'
 
 const emptyForm = {
   title: '',
@@ -38,6 +39,11 @@ export function DealsPage() {
   // per-card "moving stage" flag so only the card being moved shows a
   // disabled select, instead of freezing the whole board on every move
   const [movingDealId, setMovingDealId] = useState<string | null>(null)
+
+  // the pipeline is shown as a carousel — one stage at a time — instead
+  // of a row of six columns, which reads much better on narrow screens
+  // and keeps focus on one stage at a time
+  const [activeStageIndex, setActiveStageIndex] = useState(0)
 
   const loadDeals = () => {
     if (!token) return
@@ -107,6 +113,18 @@ export function DealsPage() {
     }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
 
   const dealsByStage = (stage: DealStage) => deals.filter((d) => d.stage === stage)
+
+  const exportDeals = () =>
+    downloadCsv(
+      'deals.csv',
+      deals.map((d) => ({
+        title: d.title,
+        amount: d.amount,
+        stage: t(`deals.stage.${d.stage}`),
+        client: `${d.client.firstName} ${d.client.lastName}`,
+        assignedTo: d.assignedTo ? `${d.assignedTo.firstName} ${d.assignedTo.lastName}` : '',
+      })),
+    )
 
   return (
     <div className="users-page">
@@ -197,51 +215,101 @@ export function DealsPage() {
       {loadError && <p className="form-error">{loadError}</p>}
 
       {!isLoadingDeals && !loadError && (
-        <div className="kanban-board">
-          {DEAL_STAGE_ORDER.map((stage) => {
-            const stageDeals = dealsByStage(stage)
-            const total = stageDeals.reduce((sum, d) => sum + d.amount, 0)
-            return (
-              <div key={stage} className="kanban-column">
-                <div className="kanban-column-header">
-                  <span>{t(`deals.stage.${stage}`)}</span>
-                  <span className="kanban-column-count">{stageDeals.length}</span>
-                </div>
-                {stageDeals.length > 0 && (
-                  <div className="kanban-column-total">{formatAmount(total)}</div>
-                )}
-                {stageDeals.length === 0 && (
-                  <p className="kanban-empty">{t('deals.emptyColumn')}</p>
-                )}
-                {stageDeals.map((deal) => (
-                  <div key={deal.id} className="kanban-card">
-                    <div className="kanban-card-title">{deal.title}</div>
-                    <div className="kanban-card-amount">{formatAmount(deal.amount)}</div>
-                    <Link to={`/clients/${deal.client.id}`} className="text-link">
-                      {deal.client.firstName} {deal.client.lastName}
-                    </Link>
-                    <div className="kanban-card-manager">
-                      {deal.assignedTo
-                        ? `${deal.assignedTo.firstName} ${deal.assignedTo.lastName}`
-                        : '—'}
-                    </div>
-                    <select
-                      value={deal.stage}
-                      disabled={movingDealId === deal.id}
-                      onChange={(e) => handleStageChange(deal, e.target.value as DealStage)}
-                    >
-                      {DEAL_STAGE_ORDER.map((s) => (
-                        <option key={s} value={s}>
-                          {t(`deals.stage.${s}`)}
-                        </option>
-                      ))}
-                    </select>
+        <section className="card kanban-carousel">
+          <div className="task-filter-row">
+            <h2>{t('deals.pipelineTitle')}</h2>
+            {deals.length > 0 && (
+              <button type="button" onClick={exportDeals}>
+                {t('common.exportCsv')}
+              </button>
+            )}
+          </div>
+
+          <div className="kanban-tabs">
+            {DEAL_STAGE_ORDER.map((stage, index) => (
+              <button
+                key={stage}
+                type="button"
+                className={`kanban-tab ${index === activeStageIndex ? 'active' : ''}`}
+                onClick={() => setActiveStageIndex(index)}
+              >
+                {t(`deals.stage.${stage}`)}
+                <span className="kanban-tab-count">{dealsByStage(stage).length}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="kanban-carousel-viewport">
+            <button
+              type="button"
+              className="kanban-nav-arrow"
+              onClick={() => setActiveStageIndex((i) => Math.max(0, i - 1))}
+              disabled={activeStageIndex === 0}
+              aria-label={t('deals.carousel.prev')}
+            >
+              ‹
+            </button>
+
+            {(() => {
+              const stage = DEAL_STAGE_ORDER[activeStageIndex]
+              const stageDeals = dealsByStage(stage)
+              const total = stageDeals.reduce((sum, d) => sum + d.amount, 0)
+              return (
+                <div className="kanban-column kanban-column-active">
+                  <div className="kanban-column-header">
+                    <span>{t(`deals.stage.${stage}`)}</span>
+                    <span className="kanban-column-count">{stageDeals.length}</span>
                   </div>
-                ))}
-              </div>
-            )
-          })}
-        </div>
+                  {stageDeals.length > 0 && (
+                    <div className="kanban-column-total">{formatAmount(total)}</div>
+                  )}
+                  {stageDeals.length === 0 && (
+                    <p className="kanban-empty">{t('deals.emptyColumn')}</p>
+                  )}
+                  <div className="kanban-column-cards">
+                    {stageDeals.map((deal) => (
+                      <div key={deal.id} className="kanban-card">
+                        <div className="kanban-card-title">{deal.title}</div>
+                        <div className="kanban-card-amount">{formatAmount(deal.amount)}</div>
+                        <Link to={`/clients/${deal.client.id}`} className="text-link">
+                          {deal.client.firstName} {deal.client.lastName}
+                        </Link>
+                        <div className="kanban-card-manager">
+                          {deal.assignedTo
+                            ? `${deal.assignedTo.firstName} ${deal.assignedTo.lastName}`
+                            : '—'}
+                        </div>
+                        <select
+                          value={deal.stage}
+                          disabled={movingDealId === deal.id}
+                          onChange={(e) => handleStageChange(deal, e.target.value as DealStage)}
+                        >
+                          {DEAL_STAGE_ORDER.map((s) => (
+                            <option key={s} value={s}>
+                              {t(`deals.stage.${s}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })()}
+
+            <button
+              type="button"
+              className="kanban-nav-arrow"
+              onClick={() =>
+                setActiveStageIndex((i) => Math.min(DEAL_STAGE_ORDER.length - 1, i + 1))
+              }
+              disabled={activeStageIndex === DEAL_STAGE_ORDER.length - 1}
+              aria-label={t('deals.carousel.next')}
+            >
+              ›
+            </button>
+          </div>
+        </section>
       )}
     </div>
   )

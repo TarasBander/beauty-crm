@@ -4,10 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
+import { ApiKeysModule } from './api-keys/api-keys.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ClientsModule } from './clients/clients.module.js';
 import { DealsModule } from './deals/deals.module.js';
 import { HealthModule } from './health/health.module.js';
+import { IntegrationsModule } from './integrations/integrations.module.js';
 import { PaymentsModule } from './payments/payments.module.js';
 import { TasksModule } from './tasks/tasks.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -40,6 +42,8 @@ import { UsersModule } from './users/users.module.js';
     TasksModule,
     PaymentsModule,
     AnalyticsModule,
+    ApiKeysModule,
+    IntegrationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

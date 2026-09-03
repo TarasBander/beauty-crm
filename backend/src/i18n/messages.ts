@@ -18,6 +18,9 @@ export const MESSAGES = {
     'deals.notFound': 'Угоду не знайдено',
     'tasks.notFound': 'Задачу не знайдено',
     'payments.notFound': 'Платіж не знайдено',
+    'integrations.keyNotFound': 'API-ключ не знайдено',
+    'integrations.missingApiKey': "Відсутній заголовок X-API-Key",
+    'integrations.invalidApiKey': 'Недійсний або відкликаний API-ключ',
   },
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
@@ -28,6 +31,9 @@ export const MESSAGES = {
     'deals.notFound': 'Deal not found',
     'tasks.notFound': 'Task not found',
     'payments.notFound': 'Payment not found',
+    'integrations.keyNotFound': 'API key not found',
+    'integrations.missingApiKey': 'Missing X-API-Key header',
+    'integrations.invalidApiKey': 'Invalid or revoked API key',
   },
 } as const satisfies Record<Lang, Record<string, string>>;
 

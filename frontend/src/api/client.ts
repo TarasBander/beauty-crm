@@ -246,6 +246,21 @@ export interface AnalyticsDashboard {
   }[];
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  keyPrefix: string;
+  revoked: boolean;
+  lastUsedAt: string | null;
+  createdBy: PublicUser;
+  createdById: string;
+  createdAt: string;
+}
+
+export interface CreateApiKeyResponse extends ApiKey {
+  rawKey: string;
+}
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -348,4 +363,19 @@ export const api = {
 
   getAnalyticsDashboard: (token: string) =>
     request<AnalyticsDashboard>('/analytics/dashboard', { token }),
+
+  listApiKeys: (token: string) => request<ApiKey[]>('/api-keys', { token }),
+
+  createApiKey: (token: string, name: string) =>
+    request<CreateApiKeyResponse>('/api-keys', {
+      method: 'POST',
+      token,
+      body: { name },
+    }),
+
+  revokeApiKey: (token: string, id: string) =>
+    request<ApiKey>(`/api-keys/${id}/revoke`, {
+      method: 'PATCH',
+      token,
+    }),
 };

@@ -10,6 +10,7 @@
     "payments": "Payments",
     "analytics": "Analytics",
     "users": "Users",
+    "integrations": "Integrations",
     "logout": "Log out",
     "changePassword": "Change password"
   },
@@ -18,7 +19,8 @@
     "sales_manager": "Sales manager"
   },
   "common": {
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "exportCsv": "Export CSV"
   },
   "auth": {
     "login": {
@@ -124,6 +126,11 @@
     "loadError": "Failed to load deals",
     "createError": "Failed to create deal",
     "emptyColumn": "No deals",
+    "pipelineTitle": "Deal stages",
+    "carousel": {
+      "prev": "Previous stage",
+      "next": "Next stage"
+    },
     "stage": {
       "new": "New",
       "contacted": "Contacted",
@@ -233,5 +240,37 @@
       "manager": "Manager",
       "dealsWon": "Deals won"
     }
+  },
+  "integrations": {
+    "title": "Integrations",
+    "subtitle": "API keys for connecting external systems to the CRM through a public read-only API.",
+    "createTitle": "Create API key",
+    "field": {
+      "name": "Key name",
+      "namePlaceholder": "e.g. Website catalog"
+    },
+    "submit": "Create",
+    "submitting": "Creating…",
+    "createError": "Failed to create key",
+    "revealWarning": "Save this key now — it won't be shown again.",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "listTitle": "Key list",
+    "loadError": "Failed to load",
+    "empty": "No keys yet — create the first one above.",
+    "revoke": "Revoke",
+    "status": {
+      "active": "Active",
+      "revoked": "Revoked"
+    },
+    "columns": {
+      "name": "Name",
+      "key": "Key",
+      "status": "Status",
+      "lastUsed": "Last used",
+      "createdBy": "Created by"
+    },
+    "usageTitle": "Usage example",
+    "usageHint": "Pass the key in the X-API-Key header. The API is read-only."
   }
 }

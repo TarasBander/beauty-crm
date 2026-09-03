@@ -10,6 +10,7 @@ import {
   type Task,
 } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { downloadCsv } from '../utils/csv'
 
 const emptyForm = {
   title: '',
@@ -122,6 +123,19 @@ export function TasksPage() {
       return b.updatedAt.localeCompare(a.updatedAt)
     })
   }, [tasks, filter])
+
+  const exportTasks = () =>
+    downloadCsv(
+      'tasks.csv',
+      visibleTasks.map((task) => ({
+        title: task.title,
+        status: t(`tasks.filter.${task.status === 'pending' ? 'active' : 'done'}`),
+        dueDate: task.dueDate ?? '',
+        client: task.client ? `${task.client.firstName} ${task.client.lastName}` : '',
+        deal: task.deal ? task.deal.title : '',
+        assignedTo: task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName}` : '',
+      })),
+    )
 
   const activeCount = tasks.filter((t) => t.status === 'pending').length
   const doneCount = tasks.filter((t) => t.status === 'done').length
@@ -246,6 +260,11 @@ export function TasksPage() {
               {t('tasks.filter.all')} ({tasks.length})
             </button>
           </div>
+          {visibleTasks.length > 0 && (
+            <button type="button" onClick={exportTasks}>
+              {t('common.exportCsv')}
+            </button>
+          )}
         </div>
 
         {isLoadingTasks && <p>{t('tasks.loading')}</p>}
