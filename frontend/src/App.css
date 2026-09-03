@@ -403,3 +403,53 @@ body {
   font-weight: 600;
   text-decoration: none;
 }
+
+/* --- Payments page --- */
+
+.payments-summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payments-summary-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.payments-summary-paid {
+  color: #1a7f37;
+}
+
+.payments-summary-pending {
+  color: #a8496c;
+}
+
+.payment-status-badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.payment-status-pending {
+  background: #f3e3e8;
+  color: #a8496c;
+}
+
+.payment-status-paid {
+  background: #e1f3e6;
+  color: #1a7f37;
+}
+
+.payment-status-cancelled {
+  background: #eee;
+  color: #888;
+}

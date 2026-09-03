@@ -24,6 +24,8 @@ const FIELD_LABELS: Record<string, Record<Lang, string>> = {
   dueDate: { uk: 'Термін виконання', en: 'Due date' },
   status: { uk: 'Статус', en: 'Status' },
   dealId: { uk: 'Угода', en: 'Deal' },
+  method: { uk: 'Спосіб оплати', en: 'Payment method' },
+  paidAt: { uk: 'Дата оплати', en: 'Payment date' },
 };
 
 function fieldLabel(property: string, lang: Lang): string {

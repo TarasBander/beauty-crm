@@ -9,6 +9,7 @@ import { ClientsPage } from './pages/ClientsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { DealsPage } from './pages/DealsPage'
 import { LoginPage } from './pages/LoginPage'
+import { PaymentsPage } from './pages/PaymentsPage'
 import { TasksPage } from './pages/TasksPage'
 import { UsersPage } from './pages/UsersPage'
 
@@ -63,6 +64,16 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <TasksPage />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <PaymentsPage />
               </Layout>
             </ProtectedRoute>
           }

@@ -17,6 +17,7 @@ export const MESSAGES = {
     'clients.notFound': 'Клієнта не знайдено',
     'deals.notFound': 'Угоду не знайдено',
     'tasks.notFound': 'Задачу не знайдено',
+    'payments.notFound': 'Платіж не знайдено',
   },
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
@@ -26,6 +27,7 @@ export const MESSAGES = {
     'clients.notFound': 'Client not found',
     'deals.notFound': 'Deal not found',
     'tasks.notFound': 'Task not found',
+    'payments.notFound': 'Payment not found',
   },
 } as const satisfies Record<Lang, Record<string, string>>;
 

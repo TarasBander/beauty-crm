@@ -7,6 +7,7 @@
     "clients": "Clients",
     "deals": "Pipeline",
     "tasks": "Tasks",
+    "payments": "Payments",
     "users": "Users",
     "logout": "Log out",
     "changePassword": "Change password"
@@ -162,6 +163,47 @@
       "client": "Client",
       "deal": "Deal",
       "assignedTo": "Assigned to"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "addTitle": "New payment",
+    "noDealsHint": "Create a deal on the Pipeline page first — a payment can only be created for an existing deal.",
+    "field": {
+      "deal": "Deal",
+      "selectDeal": "Select a deal",
+      "amount": "Amount (UAH)",
+      "method": "Payment method",
+      "notes": "Notes"
+    },
+    "submit": "Create",
+    "submitting": "Creating…",
+    "loading": "Loading…",
+    "loadError": "Failed to load payments",
+    "createError": "Failed to create payment",
+    "listTitle": "Payment list",
+    "empty": "No payments yet.",
+    "markPaid": "Mark as paid",
+    "summary": {
+      "paid": "Received",
+      "pending": "Pending"
+    },
+    "method": {
+      "cash": "Cash",
+      "card": "Card",
+      "bank_transfer": "Bank transfer"
+    },
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "deal": "Deal",
+      "amount": "Amount",
+      "method": "Method",
+      "status": "Status",
+      "paidAt": "Paid on"
     }
   }
 }

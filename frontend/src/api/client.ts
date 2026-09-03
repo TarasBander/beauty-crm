@@ -173,6 +173,33 @@ export interface CreateTaskDto {
 
 export type UpdateTaskDto = Partial<CreateTaskDto>;
 
+export type PaymentMethod = 'cash' | 'card' | 'bank_transfer';
+export type PaymentStatus = 'pending' | 'paid' | 'cancelled';
+
+export interface Payment {
+  id: string;
+  deal: Deal;
+  amount: number;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  paidAt: string | null;
+  notes: string | null;
+  createdBy: PublicUser | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePaymentDto {
+  dealId: string;
+  amount: number;
+  method: PaymentMethod;
+  status?: PaymentStatus;
+  paidAt?: string;
+  notes?: string;
+}
+
+export type UpdatePaymentDto = Partial<CreatePaymentDto>;
+
 export const api = {
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
@@ -252,6 +279,22 @@ export const api = {
 
   updateTask: (token: string, id: string, dto: UpdateTaskDto) =>
     request<Task>(`/tasks/${id}`, {
+      method: 'PATCH',
+      token,
+      body: dto,
+    }),
+
+  listPayments: (token: string) => request<Payment[]>('/payments', { token }),
+
+  createPayment: (token: string, dto: CreatePaymentDto) =>
+    request<Payment>('/payments', {
+      method: 'POST',
+      token,
+      body: dto,
+    }),
+
+  updatePayment: (token: string, id: string, dto: UpdatePaymentDto) =>
+    request<Payment>(`/payments/${id}`, {
       method: 'PATCH',
       token,
       body: dto,
