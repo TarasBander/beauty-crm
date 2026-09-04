@@ -1,14 +1,231 @@
+import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { api, ApiError, type AnalyticsDashboard, type Task } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 
+const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode }[] = [
+  {
+    to: '/clients',
+    navKey: 'nav.clients',
+    descKey: 'dashboard.tile.clients',
+    icon: (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+      </>
+    ),
+  },
+  {
+    to: '/deals',
+    navKey: 'nav.deals',
+    descKey: 'dashboard.tile.deals',
+    icon: <path d="M4 5h16l-6 8v6l-4 2v-8z" />,
+  },
+  {
+    to: '/tasks',
+    navKey: 'nav.tasks',
+    descKey: 'dashboard.tile.tasks',
+    icon: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <path d="M8 12l3 3 5-6" />
+      </>
+    ),
+  },
+  {
+    to: '/payments',
+    navKey: 'nav.payments',
+    descKey: 'dashboard.tile.payments',
+    icon: (
+      <>
+        <rect x="3" y="6" width="18" height="12" rx="2" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </>
+    ),
+  },
+  {
+    to: '/analytics',
+    navKey: 'nav.analytics',
+    descKey: 'dashboard.tile.analytics',
+    icon: (
+      <>
+        <line x1="6" y1="20" x2="6" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="18" y1="20" x2="18" y2="14" />
+      </>
+    ),
+  },
+  {
+    to: '/users',
+    navKey: 'nav.users',
+    descKey: 'dashboard.tile.users',
+    icon: (
+      <>
+        <circle cx="9" cy="8" r="3" />
+        <circle cx="16.5" cy="9.5" r="2.3" />
+        <path d="M3 20c0-3.5 3-5.5 6-5.5s6 2 6 5.5" />
+        <path d="M14 15c2.6.3 4 1.9 4.3 4.2" />
+      </>
+    ),
+  },
+  {
+    to: '/integrations',
+    navKey: 'nav.integrations',
+    descKey: 'dashboard.tile.integrations',
+    icon: (
+      <>
+        <path d="M9 3v4M15 3v4M6 7h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V7z" />
+        <path d="M12 16v5" />
+      </>
+    ),
+  },
+]
+
 export function DashboardPage() {
-  const { user } = useAuth()
-  const { t } = useTranslation()
+  const { user, token } = useAuth()
+  const { t, i18n } = useTranslation()
+
+  const [data, setData] = useState<AnalyticsDashboard | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+
+  const [upcomingTasks, setUpcomingTasks] = useState<Task[]>([])
+
+  useEffect(() => {
+    if (!token) return
+    setIsLoading(true)
+    api
+      .getAnalyticsDashboard(token)
+      .then(setData)
+      .catch((err: unknown) => {
+        setLoadError(err instanceof ApiError ? err.message : t('dashboard.loadError'))
+      })
+      .finally(() => setIsLoading(false))
+  }, [token, t])
+
+  useEffect(() => {
+    if (!token) return
+    api
+      .listTasks(token)
+      .then((tasks) => {
+        const upcoming = tasks
+          .filter((task) => task.status === 'pending')
+          .sort((a, b) => {
+            if (!a.dueDate && !b.dueDate) return 0
+            if (!a.dueDate) return 1
+            if (!b.dueDate) return -1
+            return a.dueDate.localeCompare(b.dueDate)
+          })
+          .slice(0, 5)
+        setUpcomingTasks(upcoming)
+      })
+      .catch(() => {
+        // the upcoming-tasks list is a bonus, not critical — the rest of
+        // the dashboard still renders fine without it
+      })
+  }, [token])
+
+  const formatAmount = (amount: number) =>
+    amount.toLocaleString(i18n.language === 'uk' ? 'uk-UA' : 'en-US', {
+      maximumFractionDigits: 0,
+    }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
+
+  const today = new Date().toISOString().slice(0, 10)
 
   return (
-    <div>
-      <h1>{t('dashboard.welcome', { name: user?.firstName })}</h1>
-      <p className="subtitle">{t('dashboard.subtitle')}</p>
+    <div className="users-page">
+      <div className="dashboard-hero">
+        <h1>{t('dashboard.welcome', { name: user?.firstName })}</h1>
+        <p className="subtitle">{t('dashboard.subtitle')}</p>
+
+        {isLoading && <p>{t('common.loading')}</p>}
+        {loadError && <p className="form-error">{loadError}</p>}
+
+        {!isLoading && !loadError && data && (
+          <div className="analytics-kpis">
+            <div className="analytics-kpi">
+              <span className="detail-label">{t('analytics.kpi.clients')}</span>
+              <span className="analytics-kpi-value">{data.clients.total}</span>
+            </div>
+            <div className="analytics-kpi">
+              <span className="detail-label">{t('analytics.kpi.activePipeline')}</span>
+              <span className="analytics-kpi-value">{formatAmount(data.deals.activeAmount)}</span>
+              <span className="analytics-kpi-sub">{data.deals.activeCount} {t('analytics.kpi.deals')}</span>
+            </div>
+            <div className="analytics-kpi">
+              <span className="detail-label">{t('analytics.kpi.won')}</span>
+              <span className="analytics-kpi-value analytics-kpi-positive">{formatAmount(data.deals.wonAmount)}</span>
+              <span className="analytics-kpi-sub">{data.deals.wonCount} {t('analytics.kpi.deals')}</span>
+            </div>
+            <div className="analytics-kpi">
+              <span className="detail-label">{t('analytics.kpi.pendingPayments')}</span>
+              <span className="analytics-kpi-value">{formatAmount(data.payments.totalPending)}</span>
+            </div>
+            <div className="analytics-kpi">
+              <span className="detail-label">{t('analytics.kpi.overdueTasks')}</span>
+              <span className="analytics-kpi-value analytics-kpi-negative">{data.tasks.overdue}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <section className="card">
+        <h2>{t('dashboard.quickAccessTitle')}</h2>
+        <div className="dashboard-tiles">
+          {TILES.map((tile) => (
+            <Link key={tile.to} to={tile.to} className="dashboard-tile">
+              <svg
+                className="dashboard-tile-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {tile.icon}
+              </svg>
+              <span className="dashboard-tile-title">{t(tile.navKey)}</span>
+              <span className="dashboard-tile-desc">{t(tile.descKey)}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="card">
+        <div className="task-filter-row">
+          <h2>{t('dashboard.upcomingTasksTitle')}</h2>
+          <Link to="/tasks" className="text-link">
+            {t('dashboard.viewAll')}
+          </Link>
+        </div>
+
+        {upcomingTasks.length === 0 && (
+          <p className="subtitle">{t('dashboard.noUpcomingTasks')}</p>
+        )}
+
+        {upcomingTasks.length > 0 && (
+          <ul className="dashboard-task-list">
+            {upcomingTasks.map((task) => {
+              const isOverdue = !!task.dueDate && task.dueDate < today
+              return (
+                <li key={task.id} className="dashboard-task-item">
+                  <span className="dashboard-task-title">{task.title}</span>
+                  {task.client && (
+                    <Link to={`/clients/${task.client.id}`} className="text-link">
+                      {task.client.firstName} {task.client.lastName}
+                    </Link>
+                  )}
+                  <span className={isOverdue ? 'task-overdue' : 'dashboard-task-due'}>
+                    {task.dueDate ?? '—'}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   )
 }

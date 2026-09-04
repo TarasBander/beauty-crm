@@ -46,7 +46,21 @@
   },
   "dashboard": {
     "welcome": "Welcome, {{name}}!",
-    "subtitle": "This is the starting dashboard for Beauty CRM — clients, products and deals will be added here next."
+    "subtitle": "An overview of key metrics and quick access to every section.",
+    "loadError": "Failed to load metrics",
+    "quickAccessTitle": "Quick access",
+    "upcomingTasksTitle": "Upcoming tasks",
+    "viewAll": "View all",
+    "noUpcomingTasks": "No active tasks.",
+    "tile": {
+      "clients": "Manage your salon client base",
+      "deals": "Track deals through every stage",
+      "tasks": "Plan calls and follow-ups",
+      "payments": "Track payments and balances",
+      "analytics": "Analyze sales and performance",
+      "users": "Manage your team's users",
+      "integrations": "API keys for external systems"
+    }
   },
   "users": {
     "title": "Users",

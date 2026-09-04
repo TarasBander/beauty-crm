@@ -35,10 +35,11 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   overflow-x: hidden;
-  /* A faint, repeating tile of beauty-industry silhouettes (a perfume
-     bottle, a lipstick, a nail-polish brush) — low-opacity line art so it
-     reads as texture rather than clutter behind cards and content. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%236d3b8f' stroke-width='2' opacity='0.05'%3E%3Crect x='24' y='34' width='26' height='36' rx='4'/%3E%3Crect x='31' y='23' width='12' height='13' rx='2'/%3E%3Crect x='28' y='14' width='18' height='9' rx='2'/%3E%3Crect x='152' y='66' width='16' height='42' rx='3'/%3E%3Cpolygon points='152,66 160,44 168,66'/%3E%3Crect x='146' y='104' width='28' height='11' rx='2'/%3E%3Ccircle cx='96' cy='160' r='15'/%3E%3Crect x='90' y='126' width='11' height='36' rx='3'/%3E%3Cline x1='96' y1='126' x2='96' y2='115'/%3E%3Ccircle cx='188' cy='150' r='3'/%3E%3Ccircle cx='16' cy='150' r='3'/%3E%3Ccircle cx='120' cy='30' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  /* A faint, repeating tile of beauty-industry silhouettes — a perfume
+     bottle, lipstick, nail-polish bottle, cream jar, comb, and makeup
+     brush — low-opacity line art so it reads as texture rather than
+     clutter behind cards and content. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%236d3b8f' stroke-width='2' opacity='0.06'%3E%3Crect x='30' y='60' width='26' height='34' rx='4'/%3E%3Crect x='37' y='49' width='12' height='12' rx='2'/%3E%3Crect x='34' y='40' width='18' height='9' rx='2'/%3E%3Crect x='222' y='60' width='16' height='40' rx='3'/%3E%3Cpolygon points='222,60 230,40 238,60'/%3E%3Crect x='216' y='98' width='28' height='11' rx='2'/%3E%3Cpolygon points='128,244 152,244 147,212 133,212'/%3E%3Crect x='135' y='203' width='10' height='10' rx='2'/%3E%3Cline x1='140' y1='203' x2='140' y2='194'/%3E%3Crect x='236' y='176' width='34' height='26' rx='6'/%3E%3Crect x='232' y='166' width='42' height='12' rx='4'/%3E%3Crect x='26' y='196' width='54' height='9' rx='3'/%3E%3Cline x1='32' y1='205' x2='32' y2='228'/%3E%3Cline x1='42' y1='205' x2='42' y2='228'/%3E%3Cline x1='52' y1='205' x2='52' y2='228'/%3E%3Cline x1='62' y1='205' x2='62' y2='228'/%3E%3Cline x1='72' y1='205' x2='72' y2='228'/%3E%3Cline x1='180' y1='300' x2='205' y2='255'/%3E%3Cellipse cx='208' cy='248' rx='7' ry='14' transform='rotate(-25 208 248)'/%3E%3Ccircle cx='188' cy='150' r='3'/%3E%3Ccircle cx='16' cy='150' r='3'/%3E%3Ccircle cx='120' cy='30' r='3'/%3E%3Ccircle cx='270' cy='270' r='3'/%3E%3Ccircle cx='60' cy='270' r='3'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
 }
 
@@ -738,6 +739,115 @@ code {
   color: var(--color-text-muted);
 }
 
+/* --- Dashboard page --- */
+
+.dashboard-hero {
+  position: relative;
+  padding: 1.75rem 2rem 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  background-color: var(--color-primary-light);
+  background-image: linear-gradient(
+      135deg,
+      rgba(237, 224, 247, 0.9),
+      rgba(247, 236, 214, 0.85)
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 300 300'%3E%3Cg fill='none' stroke='%236d3b8f' stroke-width='2' opacity='0.1'%3E%3Crect x='30' y='60' width='26' height='34' rx='4'/%3E%3Crect x='37' y='49' width='12' height='12' rx='2'/%3E%3Crect x='34' y='40' width='18' height='9' rx='2'/%3E%3Crect x='222' y='60' width='16' height='40' rx='3'/%3E%3Cpolygon points='222,60 230,40 238,60'/%3E%3Crect x='216' y='98' width='28' height='11' rx='2'/%3E%3Cpolygon points='128,244 152,244 147,212 133,212'/%3E%3Crect x='135' y='203' width='10' height='10' rx='2'/%3E%3Cline x1='140' y1='203' x2='140' y2='194'/%3E%3Crect x='236' y='176' width='34' height='26' rx='6'/%3E%3Crect x='232' y='166' width='42' height='12' rx='4'/%3E%3Crect x='26' y='196' width='54' height='9' rx='3'/%3E%3Cline x1='32' y1='205' x2='32' y2='228'/%3E%3Cline x1='42' y1='205' x2='42' y2='228'/%3E%3Cline x1='52' y1='205' x2='52' y2='228'/%3E%3Cline x1='62' y1='205' x2='62' y2='228'/%3E%3Cline x1='72' y1='205' x2='72' y2='228'/%3E%3Cline x1='180' y1='300' x2='205' y2='255'/%3E%3Cellipse cx='208' cy='248' rx='7' ry='14' transform='rotate(-25 208 248)'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+.dashboard-hero h1 {
+  margin: 0 0 0.35rem;
+}
+
+.dashboard-hero .subtitle {
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-hero .analytics-kpis {
+  margin-bottom: 0;
+}
+
+.dashboard-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.dashboard-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  background: var(--color-bg);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.dashboard-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(43, 27, 61, 0.1);
+  border-color: var(--color-primary);
+}
+
+.dashboard-tile-icon {
+  width: 26px;
+  height: 26px;
+  color: var(--color-primary);
+}
+
+.dashboard-tile-title {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.dashboard-tile-desc {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.dashboard-task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dashboard-task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 0.9rem;
+}
+
+.dashboard-task-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-task-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-task-due {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 /* --- Integrations page --- */
 
 .api-key-reveal {
@@ -852,6 +962,10 @@ code {
     padding: 1rem;
   }
 
+  .dashboard-hero {
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+
   .detail-grid {
     grid-template-columns: 1fr;
   }
@@ -900,6 +1014,16 @@ code {
 
   .analytics-kpis {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-task-item {
+    flex-wrap: wrap;
+    row-gap: 0.3rem;
+  }
+
+  .dashboard-task-title {
+    flex-basis: 100%;
+    white-space: normal;
   }
 
   .kanban-carousel-viewport {
