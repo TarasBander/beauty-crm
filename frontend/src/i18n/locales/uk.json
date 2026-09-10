@@ -21,7 +21,12 @@
   },
   "common": {
     "loading": "Завантаження…",
-    "exportCsv": "Експорт CSV"
+    "exportCsv": "Експорт CSV",
+    "pagination": {
+      "prev": "Назад",
+      "next": "Далі",
+      "pageInfo": "Сторінка {{page}} з {{totalPages}} (усього {{total}})"
+    }
   },
   "auth": {
     "login": {
