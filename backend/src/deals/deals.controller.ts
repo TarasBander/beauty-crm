@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import type { AuthenticatedUser } from '../auth/jwt-payload.interface.js';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { toPublicDeal } from './deal.mapper.js';
 import { DealsService } from './deals.service.js';
 import { CreateDealDto } from './dto/create-deal.dto.js';
@@ -13,9 +14,9 @@ export class DealsController {
   constructor(private readonly dealsService: DealsService) {}
 
   @Get()
-  async findAll() {
-    const deals = await this.dealsService.findAll();
-    return deals.map(toPublicDeal);
+  async findAll(@Query() query: PaginationQueryDto) {
+    const { data, meta } = await this.dealsService.findAllPaginated(query);
+    return { data: data.map(toPublicDeal), meta };
   }
 
   @Get(':id')

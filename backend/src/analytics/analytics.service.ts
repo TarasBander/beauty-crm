@@ -36,10 +36,10 @@ export class AnalyticsService {
 
   async getDashboard() {
     const [clients, deals, tasks, payments] = await Promise.all([
-      this.clientsService.findAll(),
-      this.dealsService.findAll(),
-      this.tasksService.findAll(),
-      this.paymentsService.findAll(),
+      this.clientsService.findAllRaw(),
+      this.dealsService.findAllRaw(),
+      this.tasksService.findAllRaw(),
+      this.paymentsService.findAllRaw(),
     ]);
 
     // --- deals by stage ---

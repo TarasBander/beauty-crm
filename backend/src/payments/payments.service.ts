@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { PaymentStatus } from '../common/enums/payment-status.enum.js';
+import { paginate } from '../common/pagination.util.js';
 import { DealsService } from '../deals/deals.service.js';
 import { CreatePaymentDto } from './dto/create-payment.dto.js';
 import { UpdatePaymentDto } from './dto/update-payment.dto.js';
@@ -53,7 +56,12 @@ export class PaymentsService {
     return this.findById(id);
   }
 
-  findAll(): Promise<Payment[]> {
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Payment>> {
+    return paginate(this.paymentsRepository, query, { order: { createdAt: 'DESC' } });
+  }
+
+  /** Unpaginated — internal use only (AnalyticsService aggregates). */
+  findAllRaw(): Promise<Payment[]> {
     return this.paymentsRepository.find({ order: { createdAt: 'DESC' } });
   }
 

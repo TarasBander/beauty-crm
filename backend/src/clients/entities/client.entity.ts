@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +11,10 @@ import {
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('clients')
+// Speeds up both the "assigned to me" filter a scaled-up UI would add
+// and the default list ordering, which every paginated query pays for.
+@Index(['assignedToId'])
+@Index(['createdAt'])
 export class Client {
   @PrimaryGeneratedColumn('uuid')
   id: string;

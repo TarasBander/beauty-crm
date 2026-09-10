@@ -6,7 +6,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Repository } from 'typeorm';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { Role } from '../common/enums/role.enum.js';
+import { paginate } from '../common/pagination.util.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { User } from './entities/user.entity.js';
 
@@ -38,8 +41,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find({ order: { createdAt: 'DESC' } });
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<User>> {
+    return paginate(this.usersRepository, query, { order: { createdAt: 'DESC' } });
   }
 
   findByEmail(email: string): Promise<User | null> {

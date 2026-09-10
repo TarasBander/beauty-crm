@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import type { AuthenticatedUser } from '../auth/jwt-payload.interface.js';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { toPublicApiKey } from './api-key.mapper.js';
 import { ApiKeysService } from './api-keys.service.js';
 import { CreateApiKeyDto } from './dto/create-api-key.dto.js';
@@ -12,9 +13,9 @@ export class ApiKeysController {
   constructor(private readonly apiKeysService: ApiKeysService) {}
 
   @Get()
-  async findAll() {
-    const apiKeys = await this.apiKeysService.findAll();
-    return apiKeys.map(toPublicApiKey);
+  async findAll(@Query() query: PaginationQueryDto) {
+    const { data, meta } = await this.apiKeysService.findAllPaginated(query);
+    return { data: data.map(toPublicApiKey), meta };
   }
 
   @Post()

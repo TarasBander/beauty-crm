@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientsService } from '../clients/clients.service.js';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { TaskStatus } from '../common/enums/task-status.enum.js';
+import { paginate } from '../common/pagination.util.js';
 import { DealsService } from '../deals/deals.service.js';
 import { CreateTaskDto } from './dto/create-task.dto.js';
 import { UpdateTaskDto } from './dto/update-task.dto.js';
@@ -57,7 +60,13 @@ export class TasksService {
     return this.findById(id);
   }
 
-  findAll(): Promise<Task[]> {
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Task>> {
+    return paginate(this.tasksRepository, query, { order: { createdAt: 'DESC' } });
+  }
+
+  /** Unpaginated — internal use only (AnalyticsService aggregates, the
+   * dashboard's upcoming-tasks list). */
+  findAllRaw(): Promise<Task[]> {
     return this.tasksRepository.find({ order: { createdAt: 'DESC' } });
   }
 

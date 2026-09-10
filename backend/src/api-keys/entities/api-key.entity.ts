@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -26,6 +27,9 @@ export class ApiKey {
   @Column()
   keyPrefix: string;
 
+  // Looked up on every single integrations/v1 request via ApiKeyGuard —
+  // a unique index keeps that check O(log n) instead of a table scan.
+  @Index({ unique: true })
   @Column()
   keyHash: string;
 

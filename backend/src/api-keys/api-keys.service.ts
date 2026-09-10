@@ -2,6 +2,9 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { paginate } from '../common/pagination.util.js';
 import { CreateApiKeyDto } from './dto/create-api-key.dto.js';
 import { ApiKey } from './entities/api-key.entity.js';
 
@@ -37,8 +40,8 @@ export class ApiKeysService {
     return { apiKey, rawKey };
   }
 
-  findAll(): Promise<ApiKey[]> {
-    return this.apiKeysRepository.find({ order: { createdAt: 'DESC' } });
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<ApiKey>> {
+    return paginate(this.apiKeysRepository, query, { order: { createdAt: 'DESC' } });
   }
 
   async findById(id: string): Promise<ApiKey> {

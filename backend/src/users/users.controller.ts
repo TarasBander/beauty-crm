@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { Roles } from '../auth/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { Role } from '../common/enums/role.enum.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { toPublicUser } from './user.mapper.js';
@@ -14,9 +15,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async findAll() {
-    const users = await this.usersService.findAll();
-    return users.map(toPublicUser);
+  async findAll(@Query() query: PaginationQueryDto) {
+    const { data, meta } = await this.usersService.findAllPaginated(query);
+    return { data: data.map(toPublicUser), meta };
   }
 
   @Post()

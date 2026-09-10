@@ -26,6 +26,8 @@ const FIELD_LABELS: Record<string, Record<Lang, string>> = {
   dealId: { uk: 'Угода', en: 'Deal' },
   method: { uk: 'Спосіб оплати', en: 'Payment method' },
   paidAt: { uk: 'Дата оплати', en: 'Payment date' },
+  page: { uk: 'Сторінка', en: 'Page' },
+  limit: { uk: 'Ліміт', en: 'Limit' },
 };
 
 function fieldLabel(property: string, lang: Lang): string {
@@ -67,6 +69,8 @@ const TEMPLATES: Record<string, Template> = {
       : `"${field}" has an invalid value`,
   isNumber: (field, _args, lang) =>
     lang === 'uk' ? `Поле "${field}" має бути числом` : `"${field}" must be a number`,
+  isInt: (field, _args, lang) =>
+    lang === 'uk' ? `Поле "${field}" має бути цілим числом` : `"${field}" must be an integer`,
   min: (field, args, lang) =>
     lang === 'uk'
       ? `Поле "${field}" має бути не менше ${args[0] ?? '?'}`

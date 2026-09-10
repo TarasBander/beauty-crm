@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -12,6 +13,12 @@ import { Client } from '../../clients/entities/client.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('deals')
+// clientId: the client-detail page's deal list. stage: the pipeline
+// carousel filters by stage on every render. createdAt: default sort.
+@Index(['clientId'])
+@Index(['assignedToId'])
+@Index(['stage'])
+@Index(['createdAt'])
 export class Deal {
   @PrimaryGeneratedColumn('uuid')
   id: string;

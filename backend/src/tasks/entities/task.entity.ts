@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -13,6 +14,13 @@ import { Deal } from '../../deals/entities/deal.entity.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('tasks')
+// status + dueDate together cover the dashboard/task-list "pending,
+// soonest due date first" query that runs on nearly every page load.
+@Index(['clientId'])
+@Index(['dealId'])
+@Index(['assignedToId'])
+@Index(['status', 'dueDate'])
+@Index(['createdAt'])
 export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;

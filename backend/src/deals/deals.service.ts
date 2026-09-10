@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientsService } from '../clients/clients.service.js';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { DealStage } from '../common/enums/deal-stage.enum.js';
+import { paginate } from '../common/pagination.util.js';
 import { CreateDealDto } from './dto/create-deal.dto.js';
 import { UpdateDealDto } from './dto/update-deal.dto.js';
 import { Deal } from './entities/deal.entity.js';
@@ -54,7 +57,12 @@ export class DealsService {
     return this.findById(id);
   }
 
-  findAll(): Promise<Deal[]> {
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Deal>> {
+    return paginate(this.dealsRepository, query, { order: { createdAt: 'DESC' } });
+  }
+
+  /** Unpaginated — internal use only (AnalyticsService aggregates). */
+  findAllRaw(): Promise<Deal[]> {
     return this.dealsRepository.find({ order: { createdAt: 'DESC' } });
   }
 

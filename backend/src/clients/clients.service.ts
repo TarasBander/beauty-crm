@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
+import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { paginate } from '../common/pagination.util.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 import { Client } from './entities/client.entity.js';
@@ -58,7 +61,16 @@ export class ClientsService {
     return this.findById(id);
   }
 
-  findAll(): Promise<Client[]> {
+  /** Paginated list — what the /clients controller and the public
+   * integrations API return. */
+  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Client>> {
+    return paginate(this.clientsRepository, query, { order: { createdAt: 'DESC' } });
+  }
+
+  /** Unpaginated — for internal callers that need every row, like
+   * AnalyticsService's aggregates. Never expose this straight to a
+   * controller: it doesn't scale past however many clients fit in memory. */
+  findAllRaw(): Promise<Client[]> {
     return this.clientsRepository.find({ order: { createdAt: 'DESC' } });
   }
 

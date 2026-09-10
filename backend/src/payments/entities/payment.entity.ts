@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -13,6 +14,10 @@ import { PaymentStatus } from '../../common/enums/payment-status.enum.js';
 import { User } from '../../users/entities/user.entity.js';
 
 @Entity('payments')
+// status: the pending/received summary bar filters by this on every load.
+@Index(['dealId'])
+@Index(['status'])
+@Index(['createdAt'])
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
