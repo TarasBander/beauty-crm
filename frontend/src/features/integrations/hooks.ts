@@ -3,6 +3,7 @@ import type { PaginationParams } from '../../shared/api/http'
 import { useAuth } from '../auth/AuthContext'
 import { apiKeyKeys, apiKeysApi } from './api'
 
+// useQuery — одна сторінка API-ключів.
 export function useApiKeys(params: PaginationParams = {}) {
   const { token } = useAuth()
   return useQuery({
@@ -13,6 +14,7 @@ export function useApiKeys(params: PaginationParams = {}) {
   })
 }
 
+// useMutation — створення ключа, інвалідуємо закешовані списки.
 export function useCreateApiKey() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
@@ -24,6 +26,9 @@ export function useCreateApiKey() {
   })
 }
 
+// useMutation — відкликання ключа, теж просто інвалідуємо список
+// (тут без оптимістичного оновлення — відкликання не настільки часта
+// дія, щоб виправдати зайву складність onMutate/onError).
 export function useRevokeApiKey() {
   const { token } = useAuth()
   const queryClient = useQueryClient()

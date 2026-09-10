@@ -27,9 +27,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(() => getStoredToken())
   const queryClient = useQueryClient()
 
-  // The "am I logged in" check is just a query, like everything else —
-  // its cache entry is what login() below pre-populates so there's no
-  // extra round-trip right after signing in.
+  // useQuery для перевірки "чи я залогінений": робить GET /auth/me і
+  // кладе відповідь у кеш React Query під ключем meQueryKey(token) —
+  // тобто окремий запис кешу на кожен токен. enabled: !!token означає,
+  // що запит взагалі не піде, поки токена немає (наприклад, на сторінці
+  // входу). retry: false — якщо токен невалідний, повторювати запит
+  // немає сенсу, бо результат буде той самий (401). Цей самий запис
+  // кешу нижче наповнює login() одразу після успішного входу — і його ж
+  // читає useAuth() у будь-якому компоненті застосунку через `user`.
   const meQuery = useQuery({
     queryKey: meQueryKey(token),
     queryFn: () => authApi.me(token as string),
@@ -39,9 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    // A stored token that the backend no longer accepts (expired,
-    // revoked) — drop it so ProtectedRoute redirects to /login instead
-    // of getting stuck on the loading screen forever.
+    // Збережений токен, який бекенд більше не приймає (протух,
+    // відкликаний) — прибираємо його, щоб ProtectedRoute перекинув на
+    // /login, а не завис на екрані завантаження назавжди.
     if (token && meQuery.isError) {
       setStoredToken(null)
       setTokenState(null)
@@ -52,8 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       const response = await authApi.login(email, password)
       setStoredToken(response.accessToken)
-      // Seed the cache for the new token's query key before switching to
-      // it, so the very next render already has `user` — no loading flash.
+      // Одразу наповнюємо кеш React Query під ключем нового токена ще
+      // ДО того, як перемкнути стан на цей токен — тож щойно useQuery
+      // вище перепідпишеться на новий ключ, дані вже будуть на місці
+      // (без зайвого запиту й без "миготіння" екрана завантаження).
       queryClient.setQueryData(meQueryKey(response.accessToken), response.user)
       setTokenState(response.accessToken)
     },
@@ -63,9 +70,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setStoredToken(null)
     setTokenState(null)
-    // Every other query (clients, deals, ...) is scoped to "whoever is
-    // logged in" — wipe the cache so the next user never sees a flash of
-    // the previous one's data.
+    // Усі інші useQuery в застосунку (клієнти, угоди, ...) прив'язані до
+    // "хто зараз залогінений" — тому при виході повністю чистимо кеш
+    // React Query, щоб наступний користувач на цьому ж пристрої не
+    // побачив на мить дані попереднього.
     queryClient.clear()
   }, [queryClient])
 

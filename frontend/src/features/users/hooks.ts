@@ -3,6 +3,7 @@ import { SELECT_PAGE_SIZE, type PaginationParams } from '../../shared/api/http'
 import { useAuth } from '../auth/AuthContext'
 import { userKeys, usersApi, type CreateUserDto } from './api'
 
+// useQuery — одна сторінка користувачів (таблиця на сторінці "Користувачі").
 export function useUsers(params: PaginationParams = {}) {
   const { token } = useAuth()
   return useQuery({
@@ -13,12 +14,14 @@ export function useUsers(params: PaginationParams = {}) {
   })
 }
 
-/** "Practically every manager", for assignee dropdowns elsewhere in the
- * app — not the paginated Users table. */
+/** "Практично всі менеджери" для випадаючих списків "відповідальний" в
+ * інших місцях застосунку — це useUsers() з великим limit, а не окрема
+ * пагінована таблиця користувачів. */
 export function useAllUsers() {
   return useUsers({ page: 1, limit: SELECT_PAGE_SIZE })
 }
 
+// useMutation — створення користувача, інвалідуємо закешовані списки.
 export function useCreateUser() {
   const { token } = useAuth()
   const queryClient = useQueryClient()

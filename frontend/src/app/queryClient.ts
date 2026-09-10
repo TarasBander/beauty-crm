@@ -1,17 +1,24 @@
 import { QueryClient } from '@tanstack/react-query';
 
-// One shared cache/config for every useQuery/useMutation in the app.
+// Один спільний QueryClient — це "мозок" React Query: він тримає кеш
+// усіх запитів (useQuery) і налаштування за замовчуванням для кожного
+// useQuery/useMutation у застосунку. QueryClientProvider у main.tsx
+// робить цей інстанс доступним будь-якому компоненту через хуки.
 //
-// - staleTime: 30s — this is an internal CRM, not a live feed. Most
-//   screens share data (the client dropdown and the clients table both
-//   read the same cache), so a short-but-nonzero staleTime avoids a
-//   refetch every time a component mounts while still picking up
-//   changes a moment later.
-// - refetchOnWindowFocus: off — switching browser tabs shouldn't cause
-//   list pages to flicker/reload; mutations already invalidate the
-//   exact queries they affect.
-// - retry: 1 — one retry smooths over a flaky request without turning a
-//   real 4xx/5xx into a long silent wait.
+// - staleTime: 30с — це внутрішня CRM, а не стрічка новин у реальному
+//   часі. Багато екранів читають ті самі дані (наприклад, випадаючий
+//   список клієнтів і таблиця клієнтів дивляться в один і той самий
+//   кеш), тож невеликий staleTime рятує від повторного запиту щоразу,
+//   коли компонент монтується, і водночас дані оновлюються за 30с.
+// - gcTime: 5 хв — як довго React Query тримає в пам'яті кеш запиту,
+//   яким ніхто вже не користується (жоден компонент не підписаний),
+//   перш ніж прибрати його — щоб не роздувати пам'ять навічно.
+// - refetchOnWindowFocus: off — перемикання вкладок браузера не повинно
+//   викликати перезавантаження/мигання списків; мутації й так самі
+//   інвалідують (позначають застарілими) саме ті запити, яких вони
+//   стосуються.
+// - retry: 1 — один повтор згладжує випадковий збій мережі, але не
+//   перетворює справжню 4xx/5xx помилку на довге мовчазне очікування.
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

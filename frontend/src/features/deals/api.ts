@@ -42,6 +42,8 @@ export interface CreateDealDto {
 
 export type UpdateDealDto = Partial<CreateDealDto>;
 
+// Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
+// у features/clients/api.ts (дивись коментар там).
 export const dealKeys = {
   all: ['deals'] as const,
   lists: () => [...dealKeys.all, 'list'] as const,

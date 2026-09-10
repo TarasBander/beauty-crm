@@ -9,6 +9,7 @@ import {
   type UpdatePaymentDto,
 } from './api'
 
+// useQuery — одна сторінка платежів.
 export function usePayments(params: PaginationParams = {}) {
   const { token } = useAuth()
   return useQuery({
@@ -19,12 +20,14 @@ export function usePayments(params: PaginationParams = {}) {
   })
 }
 
-/** The paid/pending summary bar totals every payment, not just one
- * page — same reasoning as useAllDeals(). Bounded at SELECT_PAGE_SIZE. */
+/** Смуга "отримано/очікується" підсумовує всі платежі, а не одну
+ * сторінку — та сама логіка, що й у useAllDeals(). Обмежено
+ * SELECT_PAGE_SIZE. */
 export function useAllPayments() {
   return usePayments({ page: 1, limit: SELECT_PAGE_SIZE })
 }
 
+// useMutation — створення платежу, інвалідуємо закешовані списки.
 export function useCreatePayment() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
@@ -41,14 +44,14 @@ interface PaymentsListData {
   meta: unknown
 }
 
+// useMutation з оптимістичним оновленням для "позначити оплаченим" —
+// той самий патерн onMutate/onError/onSettled, що й у useUpdateDeal.
 export function useUpdatePayment() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePaymentDto }) =>
       paymentsApi.update(token as string, id, dto),
-    // Optimistic update for "mark as paid" — see useUpdateDeal for the
-    // same pattern.
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: paymentKeys.lists() })
       const previous = queryClient.getQueriesData<PaymentsListData>({
@@ -74,7 +77,7 @@ export function useUpdatePayment() {
   })
 }
 
-/** Fetches every payment across all pages, for CSV export. */
+/** Забирає всі платежі по всіх сторінках — для експорту в CSV. */
 export function exportAllPayments(token: string) {
   return fetchAllPages((params) => paymentsApi.list(token, params))
 }

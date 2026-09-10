@@ -3,6 +3,8 @@ import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../sh
 import { useAuth } from '../auth/AuthContext'
 import { dealKeys, dealsApi, type CreateDealDto, type Deal, type UpdateDealDto } from './api'
 
+// useQuery — одна сторінка угод, кеш-ключ включає параметри пагінації
+// (як і в useClients вище).
 export function useDeals(params: PaginationParams = {}) {
   const { token } = useAuth()
   return useQuery({
@@ -14,18 +16,21 @@ export function useDeals(params: PaginationParams = {}) {
 }
 
 /**
- * The pipeline view buckets every deal by stage and shows a per-stage
- * total, so it needs the full set rather than one page at a time — a
- * paginated table would show inaccurate stage counts whenever a deal on
- * a later page belonged to a stage not yet loaded. SELECT_PAGE_SIZE
- * (100, the backend's max) keeps this bounded; a CRM that outgrows that
- * many open deals should move stage-bucketing to a backend aggregate
- * endpoint instead of raising the limit further.
+ * Воронка (канбан) розкладає всі угоди по стадіях і показує суму по
+ * кожній стадії, тож їй потрібен увесь набір даних одразу, а не одна
+ * сторінка за раз — пагінована таблиця показувала б неправильні суми,
+ * поки угода з наступної сторінки ще не завантажена. Це той самий
+ * useDeals() зверху з limit = SELECT_PAGE_SIZE (100, максимум бекенду) —
+ * межа тримає запит обмеженим; якщо в CRM стане більше відкритих угод,
+ * розкладку по стадіях краще перенести на окремий агрегатний ендпоінт
+ * бекенду, а не піднімати ліміт далі.
  */
 export function useAllDeals() {
   return useDeals({ page: 1, limit: SELECT_PAGE_SIZE })
 }
 
+// useMutation — створення угоди, після успіху інвалідуємо всі закешовані
+// списки угод (так само, як useCreateClient).
 export function useCreateDeal() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
@@ -42,17 +47,22 @@ interface DealsListData {
   meta: unknown
 }
 
+// useMutation зі "оптимістичним" оновленням — картку угоди в канбані
+// перетягують між стадіями часто, і чекати відповідь сервера перед
+// тим, як картка переїде, відчувалось би повільно. Тому:
+//  1) onMutate — одразу, ще до відповіді сервера, підправляємо угоду в
+//     УСІХ закешованих списках угод (картка "переїжджає" миттєво);
+//  2) onError — якщо сервер відхилив зміну, повертаємо кеш до стану,
+//     який зберегли в onMutate (context.previous);
+//  3) onSettled — коли запит завершився (успішно чи ні), інвалідуємо
+//     кеш по-справжньому, щоб отримати гарантовано актуальні дані з
+//     бекенду замість тимчасового "оптимістичного" патчу.
 export function useUpdateDeal() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateDealDto }) =>
       dealsApi.update(token as string, id, dto),
-    // Optimistic update: the pipeline carousel calls this on every stage
-    // change, and waiting for a round-trip before moving the card would
-    // feel laggy — patch every cached deals list immediately, and only
-    // invalidate for real once the server confirms (or roll back if it
-    // rejects the change).
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: dealKeys.lists() })
       const previous = queryClient.getQueriesData<DealsListData>({ queryKey: dealKeys.lists() })
@@ -76,7 +86,8 @@ export function useUpdateDeal() {
   })
 }
 
-/** Fetches every deal across all pages, for CSV export. */
+/** Забирає всі угоди по всіх сторінках — для експорту в CSV (не useQuery,
+ * одноразова дія по кліку, як exportAllClients). */
 export function exportAllDeals(token: string) {
   return fetchAllPages((params) => dealsApi.list(token, params))
 }

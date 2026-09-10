@@ -34,6 +34,8 @@ export interface CreatePaymentDto {
 
 export type UpdatePaymentDto = Partial<CreatePaymentDto>;
 
+// Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
+// у features/clients/api.ts (дивись коментар там).
 export const paymentKeys = {
   all: ['payments'] as const,
   lists: () => [...paymentKeys.all, 'list'] as const,

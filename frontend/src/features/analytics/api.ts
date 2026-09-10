@@ -48,6 +48,9 @@ export interface AnalyticsDashboard {
   }[];
 }
 
+// Ключ кешу для useAnalyticsDashboard() — фіксований, без параметрів,
+// бо тут нема пагінації чи фільтрів (дивись коментар про фабрику
+// ключів у features/clients/api.ts).
 export const analyticsKeys = {
   dashboard: ['analytics', 'dashboard'] as const,
 };

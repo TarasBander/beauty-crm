@@ -36,6 +36,8 @@ export interface CreateTaskDto {
 
 export type UpdateTaskDto = Partial<CreateTaskDto>;
 
+// Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
+// у features/clients/api.ts (дивись коментар там).
 export const taskKeys = {
   all: ['tasks'] as const,
   lists: () => [...taskKeys.all, 'list'] as const,

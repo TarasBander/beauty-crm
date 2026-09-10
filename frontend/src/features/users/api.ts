@@ -14,6 +14,8 @@ export interface CreateUserDto {
   role: Role;
 }
 
+// Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
+// у features/clients/api.ts (дивись коментар там).
 export const userKeys = {
   all: ['users'] as const,
   lists: () => [...userKeys.all, 'list'] as const,

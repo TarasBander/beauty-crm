@@ -21,6 +21,8 @@ export interface CreateApiKeyResponse extends ApiKey {
   rawKey: string;
 }
 
+// Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
+// у features/clients/api.ts (дивись коментар там).
 export const apiKeyKeys = {
   all: ['apiKeys'] as const,
   lists: () => [...apiKeyKeys.all, 'list'] as const,

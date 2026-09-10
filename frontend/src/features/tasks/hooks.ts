@@ -3,6 +3,7 @@ import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../sh
 import { useAuth } from '../auth/AuthContext'
 import { taskKeys, tasksApi, type CreateTaskDto, type Task, type UpdateTaskDto } from './api'
 
+// useQuery — одна сторінка задач.
 export function useTasks(params: PaginationParams = {}) {
   const { token } = useAuth()
   return useQuery({
@@ -14,14 +15,16 @@ export function useTasks(params: PaginationParams = {}) {
 }
 
 /**
- * The task list's filter tabs show accurate active/done/all counts and
- * sort pending tasks by due date across the whole set, not just one
- * page — same reasoning as useAllDeals(). Bounded at SELECT_PAGE_SIZE.
+ * Вкладки-фільтри списку задач (активні/виконані/усі) показують точну
+ * кількість і сортують задачі за терміном по всьому набору, а не по
+ * одній сторінці — та сама логіка, що й у useAllDeals(). Обмежено
+ * SELECT_PAGE_SIZE.
  */
 export function useAllTasks() {
   return useTasks({ page: 1, limit: SELECT_PAGE_SIZE })
 }
 
+// useMutation — створення задачі, інвалідуємо закешовані списки задач.
 export function useCreateTask() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
@@ -38,14 +41,14 @@ interface TasksListData {
   meta: unknown
 }
 
+// useMutation з оптимістичним оновленням для чекбокса "виконано" —
+// той самий патерн onMutate/onError/onSettled, що й у useUpdateDeal.
 export function useUpdateTask() {
   const { token } = useAuth()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateTaskDto }) =>
       tasksApi.update(token as string, id, dto),
-    // Optimistic update for the "mark done" checkbox — see useUpdateDeal
-    // for the same pattern with the pipeline's stage select.
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() })
       const previous = queryClient.getQueriesData<TasksListData>({ queryKey: taskKeys.lists() })
@@ -69,7 +72,7 @@ export function useUpdateTask() {
   })
 }
 
-/** Fetches every task across all pages, for CSV export. */
+/** Забирає всі задачі по всіх сторінках — для експорту в CSV. */
 export function exportAllTasks(token: string) {
   return fetchAllPages((params) => tasksApi.list(token, params))
 }

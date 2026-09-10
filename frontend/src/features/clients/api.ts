@@ -36,6 +36,19 @@ export interface CreateClientDto {
 
 export type UpdateClientDto = Partial<CreateClientDto>;
 
+// Фабрика ключів кешу для useQuery/useQueryClient (queryKey). Кожен
+// useQuery({ queryKey: ... }) у hooks.ts кешується під своїм ключем із
+// цього дерева, і саме за цими ключами queryClient.invalidateQueries()
+// та queryClient.setQueryData() знаходять, які записи кешу оновити:
+// - clientKeys.all           — корінь, об'єднує геть усе про клієнтів;
+// - clientKeys.lists()       — усі закешовані СПИСКИ (всі сторінки/
+//   фільтри одразу) — по цьому ключу invalidateQueries("протухляє" всі
+//   сторінки таблиці клієнтів разом);
+// - clientKeys.list(params)  — КОНКРЕТНА сторінка/фільтр (саме її читає
+//   useQuery у useClients());
+// - clientKeys.details()     — усі закешовані картки клієнтів разом;
+// - clientKeys.detail(id)    — картка ОДНОГО клієнта (її читає useClient()
+//   і саме її оновлює useUpdateClient() через setQueryData).
 export const clientKeys = {
   all: ['clients'] as const,
   lists: () => [...clientKeys.all, 'list'] as const,
