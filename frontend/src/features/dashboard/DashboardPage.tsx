@@ -5,6 +5,7 @@ import { ApiError } from '../../shared/api/http'
 import type { Role } from '../../shared/api/types'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
+import { QueryStatus } from '../../shared/components/QueryStatus'
 import { todayLocalISO } from '../../shared/utils/date'
 import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
@@ -191,11 +192,18 @@ export function DashboardPage() {
           </Link>
         }
       >
-        {upcomingTasks.length === 0 && (
-          <p className="subtitle">{t('dashboard.noUpcomingTasks')}</p>
-        )}
-
-        {upcomingTasks.length > 0 && (
+        {/* Раніше тут перевірявся лише upcomingTasks.length === 0 — поки
+            dashboardQuery ще вантажиться, upcomingTasks теж [] (це
+            плейсхолдер до відповіді), тож на мить показувалось "немає
+            задач", а за секунду — п'ять задач. QueryStatus прибирає
+            "порожньо" з переліку можливостей, поки запит ще в
+            isPending/isError. */}
+        <QueryStatus
+          query={dashboardQuery}
+          errorFallback={t('dashboard.loadError')}
+          isEmpty={upcomingTasks.length === 0}
+          emptyText={t('dashboard.noUpcomingTasks')}
+        >
           <ul className="dashboard-task-list">
             {upcomingTasks.map((task) => {
               const isOverdue = !!task.dueDate && task.dueDate < today
@@ -214,7 +222,7 @@ export function DashboardPage() {
               )
             })}
           </ul>
-        )}
+        </QueryStatus>
       </Card>
     </Page>
   )

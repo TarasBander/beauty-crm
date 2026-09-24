@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ApiError } from '../../shared/api/http'
+import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
@@ -44,8 +44,10 @@ export function PaymentsPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportWarning, setExportWarning] = useState<string | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null)
+  const [markPaidError, setMarkPaidError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -60,10 +62,13 @@ export function PaymentsPage() {
 
   const markPaid = async (payment: Payment) => {
     setMarkingPaidId(payment.id)
+    setMarkPaidError(null)
     try {
       await updatePayment.mutateAsync({ id: payment.id, dto: { status: 'paid', paidAt: todayLocalISO() } })
-    } catch {
-      // the mutation's onError already rolled the optimistic change back
+    } catch (err) {
+      // the mutation's onError already rolled the optimistic change back —
+      // this just explains why the row snapped back to "pending".
+      setMarkPaidError(messageFrom(err, t('payments.markPaidError')))
     } finally {
       setMarkingPaidId(null)
     }
@@ -80,6 +85,7 @@ export function PaymentsPage() {
     if (!token) return
     setIsExporting(true)
     setExportWarning(null)
+    setExportError(null)
     try {
       const { rows, truncated, total } = await exportAllPayments(token)
       downloadCsv(
@@ -96,6 +102,8 @@ export function PaymentsPage() {
       if (truncated) {
         setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
       }
+    } catch (err) {
+      setExportError(messageFrom(err, t('common.exportError')))
     } finally {
       setIsExporting(false)
     }
@@ -136,6 +144,8 @@ export function PaymentsPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
+        {exportError && <p className="form-error">{exportError}</p>}
+        {markPaidError && <p className="form-error">{markPaidError}</p>}
         {isListCapped(paymentsQuery.data?.meta, payments.length) && (
           <Banner>
             {t('common.incompleteData', { loaded: payments.length, total: paymentsQuery.data?.meta.total })}

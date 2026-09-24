@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ApiError } from '../../shared/api/http'
+import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
@@ -27,6 +27,7 @@ export function ClientsPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportWarning, setExportWarning] = useState<string | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const clients = clientsQuery.data?.data ?? []
   const meta = clientsQuery.data?.meta
@@ -47,6 +48,7 @@ export function ClientsPage() {
     if (!token) return
     setIsExporting(true)
     setExportWarning(null)
+    setExportError(null)
     try {
       const { rows, truncated, total } = await exportAllClients(token)
       downloadCsv(
@@ -65,6 +67,8 @@ export function ClientsPage() {
       if (truncated) {
         setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
       }
+    } catch (err) {
+      setExportError(messageFrom(err, t('common.exportError')))
     } finally {
       setIsExporting(false)
     }
@@ -97,6 +101,7 @@ export function ClientsPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
+        {exportError && <p className="form-error">{exportError}</p>}
         <QueryStatus
           query={clientsQuery}
           loadingText={t('clients.loading')}

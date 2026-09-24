@@ -22,6 +22,7 @@
   "common": {
     "loading": "Loading…",
     "exportCsv": "Export CSV",
+    "exportError": "Failed to export data",
     "clear": "Clear",
     "searching": "Searching…",
     "typeToSearch": "Type to search…",
@@ -37,6 +38,9 @@
       "title": "Page not found",
       "backHome": "Back to home"
     }
+  },
+  "errors": {
+    "pageCrashed": "This page crashed. Try another tab."
   },
   "auth": {
     "login": {
@@ -155,6 +159,7 @@
     "loading": "Loading…",
     "loadError": "Failed to load deals",
     "createError": "Failed to create deal",
+    "stageChangeError": "Failed to move the deal to another stage",
     "emptyColumn": "No deals",
     "cardsIncomplete": "Showing {{loaded}} of {{total}} deals in this stage — the rest haven't loaded yet.",
     "pipelineTitle": "Deal stages",
@@ -188,6 +193,7 @@
     "loading": "Loading…",
     "loadError": "Failed to load tasks",
     "createError": "Failed to create task",
+    "toggleError": "Failed to update the task's status",
     "listTitle": "Task list",
     "empty": "No tasks yet.",
     "markDone": "Mark as done",
@@ -220,6 +226,7 @@
     "loading": "Loading…",
     "loadError": "Failed to load payments",
     "createError": "Failed to create payment",
+    "markPaidError": "Failed to mark the payment as paid",
     "listTitle": "Payment list",
     "empty": "No payments yet.",
     "markPaid": "Mark as paid",
@@ -283,6 +290,7 @@
     "submit": "Create",
     "submitting": "Creating…",
     "createError": "Failed to create key",
+    "revokeError": "Failed to revoke the key",
     "revealWarning": "Save this key now — it won't be shown again.",
     "copy": "Copy",
     "copied": "Copied!",

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ApiError } from '../../shared/api/http'
+import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
@@ -40,10 +40,12 @@ export function DealsPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportWarning, setExportWarning] = useState<string | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   // per-card "moving stage" flag so only the card being moved shows a
   // disabled select, instead of freezing the whole board on every move
   const [movingDealId, setMovingDealId] = useState<string | null>(null)
+  const [stageError, setStageError] = useState<string | null>(null)
 
   // the pipeline is shown as a carousel — one stage at a time — instead
   // of a row of six columns, which reads much better on narrow screens
@@ -64,10 +66,14 @@ export function DealsPage() {
   const handleStageChange = async (deal: Deal, stage: DealStage) => {
     if (stage === deal.stage) return
     setMovingDealId(deal.id)
+    setStageError(null)
     try {
       await updateDeal.mutateAsync({ id: deal.id, dto: { stage } })
-    } catch {
-      // the mutation's onError already rolled the optimistic change back
+    } catch (err) {
+      // the mutation's onError already rolled the optimistic change back —
+      // this line just explains *why* the card snapped back instead of
+      // leaving the user to wonder and click it again.
+      setStageError(messageFrom(err, t('deals.stageChangeError')))
     } finally {
       setMovingDealId(null)
     }
@@ -79,6 +85,7 @@ export function DealsPage() {
     if (!token) return
     setIsExporting(true)
     setExportWarning(null)
+    setExportError(null)
     try {
       const { rows, truncated, total } = await exportAllDeals(token)
       downloadCsv(
@@ -94,6 +101,8 @@ export function DealsPage() {
       if (truncated) {
         setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
       }
+    } catch (err) {
+      setExportError(messageFrom(err, t('common.exportError')))
     } finally {
       setIsExporting(false)
     }
@@ -127,6 +136,8 @@ export function DealsPage() {
           }
         >
           {exportWarning && <Banner>{exportWarning}</Banner>}
+          {exportError && <p className="form-error">{exportError}</p>}
+          {stageError && <p className="form-error">{stageError}</p>}
           {isListCapped(dealsQuery.data?.meta, deals.length) && (
             <Banner>
               {t('common.incompleteData', { loaded: deals.length, total: dealsQuery.data?.meta.total })}

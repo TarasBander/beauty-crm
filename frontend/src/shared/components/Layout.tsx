@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
 import type { Role } from '../api/types'
+import { ErrorBoundary } from './ErrorBoundary'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
 // roles: undefined означає "видно всім залогіненим"; коли список заданий,
@@ -28,6 +29,7 @@ const NAV_ITEMS: { to: string; end?: boolean; labelKey: string; roles?: Role[] }
 export function Layout() {
   const { user, logout } = useAuth()
   const { t } = useTranslation()
+  const location = useLocation()
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   const closeMobileNav = () => setIsMobileNavOpen(false)
@@ -115,7 +117,13 @@ export function Layout() {
         </div>
       </header>
       <main className="content">
-        <Outlet />
+        {/* key={location.pathname}: коли впала сторінка, користувач тисне
+            на інший пункт меню (шапка й так лишається робочою) — новий
+            key монтує ErrorBoundary заново з чистим hasError, замість
+            того, щоб застрягти на fallback назавжди. */}
+        <ErrorBoundary key={location.pathname} fallback={<p className="form-error">{t('errors.pageCrashed')}</p>}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   )

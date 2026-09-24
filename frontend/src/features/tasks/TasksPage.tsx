@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ApiError } from '../../shared/api/http'
+import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
@@ -45,9 +45,11 @@ export function TasksPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [exportWarning, setExportWarning] = useState<string | null>(null)
+  const [exportError, setExportError] = useState<string | null>(null)
 
   const [filter, setFilter] = useState<TaskFilter>('active')
   const [togglingTaskId, setTogglingTaskId] = useState<string | null>(null)
+  const [toggleError, setToggleError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -63,10 +65,13 @@ export function TasksPage() {
   const toggleDone = async (task: Task) => {
     const nextStatus = task.status === 'done' ? 'pending' : 'done'
     setTogglingTaskId(task.id)
+    setToggleError(null)
     try {
       await updateTask.mutateAsync({ id: task.id, dto: { status: nextStatus } })
-    } catch {
-      // the mutation's onError already rolled the optimistic change back
+    } catch (err) {
+      // the mutation's onError already rolled the optimistic change back —
+      // this just explains why the checkbox snapped back.
+      setToggleError(messageFrom(err, t('tasks.toggleError')))
     } finally {
       setTogglingTaskId(null)
     }
@@ -80,6 +85,7 @@ export function TasksPage() {
     if (!token) return
     setIsExporting(true)
     setExportWarning(null)
+    setExportError(null)
     try {
       const { rows, truncated, total } = await exportAllTasks(token)
       downloadCsv(
@@ -96,6 +102,8 @@ export function TasksPage() {
       if (truncated) {
         setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
       }
+    } catch (err) {
+      setExportError(messageFrom(err, t('common.exportError')))
     } finally {
       setIsExporting(false)
     }
@@ -139,6 +147,8 @@ export function TasksPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
+        {exportError && <p className="form-error">{exportError}</p>}
+        {toggleError && <p className="form-error">{toggleError}</p>}
         {isListCapped(tasksQuery.data?.meta, tasks.length) && (
           <Banner>{t('common.incompleteData', { loaded: tasks.length, total: tasksQuery.data?.meta.total })}</Banner>
         )}

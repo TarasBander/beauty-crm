@@ -9,6 +9,16 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Той самий `err instanceof ApiError ? err.message : fallback`, який
+ * інакше довелось би повторювати в кожному catch (mutation чи export) —
+ * ApiError несе текст від бекенду (напр. валідація), будь-що інше
+ * (мережа впала, JS-помилка) отримує загальний fallback-текст сторінки.
+ */
+export function messageFrom(error: unknown, fallback: string): string {
+  return error instanceof ApiError ? error.message : fallback;
+}
+
 const TOKEN_STORAGE_KEY = 'crm.accessToken';
 
 export function getStoredToken(): string | null {

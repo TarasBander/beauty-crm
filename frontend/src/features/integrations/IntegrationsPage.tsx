@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ApiError } from '../../shared/api/http'
+import { ApiError, messageFrom } from '../../shared/api/http'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { Pagination } from '../../shared/components/Pagination'
@@ -28,6 +28,7 @@ export function IntegrationsPage() {
   const [copyHint, setCopyHint] = useState(false)
 
   const [revokingId, setRevokingId] = useState<string | null>(null)
+  const [revokeError, setRevokeError] = useState<string | null>(null)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -43,8 +44,11 @@ export function IntegrationsPage() {
 
   const handleRevoke = async (apiKey: ApiKey) => {
     setRevokingId(apiKey.id)
+    setRevokeError(null)
     try {
       await revokeApiKey.mutateAsync(apiKey.id)
+    } catch (err) {
+      setRevokeError(messageFrom(err, t('integrations.revokeError')))
     } finally {
       setRevokingId(null)
     }
@@ -96,6 +100,7 @@ export function IntegrationsPage() {
       </Card>
 
       <Card title={t('integrations.listTitle')}>
+        {revokeError && <p className="form-error">{revokeError}</p>}
         <QueryStatus
           query={apiKeysQuery}
           errorFallback={t('integrations.loadError')}
