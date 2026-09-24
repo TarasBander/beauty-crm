@@ -40,7 +40,11 @@ export function clientToFormValues(client: Client): ClientFormValues {
   }
 }
 
-function emptyToUndefined(value: string): string | undefined {
+// Exported for its own unit test (see clientForm.test.ts) — the mapping
+// below leans on it for every optional field, so a regression here (e.g.
+// treating a whitespace-only value as "meaningful") would silently send
+// the wrong thing on every save, not just this one.
+export function emptyToUndefined(value: string): string | undefined {
   return value.trim() === '' ? undefined : value
 }
 

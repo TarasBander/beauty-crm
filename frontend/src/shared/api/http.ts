@@ -1,5 +1,14 @@
 import i18n from '../../i18n';
 
+// In dev this only worked because vite.config.ts proxies `/api` to the
+// backend — a production build has no such proxy unless the deploy sets
+// one up itself (same-origin reverse proxy, nginx location block etc.).
+// VITE_API_BASE lets a build point straight at a different origin
+// (e.g. https://api.example.com) when that's not the case; unset, it
+// keeps today's behavior exactly (`/api`, same origin, dev proxy or a
+// prod reverse proxy handles the rest).
+const API_BASE = import.meta.env.VITE_API_BASE ?? '/api';
+
 export class ApiError extends Error {
   status: number;
 
@@ -68,7 +77,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     headers.Authorization = `Bearer ${options.token}`;
   }
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: options.method ?? 'GET',
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -89,10 +98,18 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     }
 
     const payload = await res.json().catch(() => null);
-    const message =
-      (payload && (payload.message?.toString?.() ?? payload.error)) ??
-      `HTTP ${res.status}`;
-    throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
+    // NestJS's ValidationPipe sends `message` as a string[] when several
+    // fields fail at once (e.g. ["phone must be...", "email must be..."]).
+    // The old code called `.toString?.()` on it BEFORE checking
+    // Array.isArray — Array.prototype.toString already joins with a bare
+    // comma, no space, so by the time Array.isArray ran, `message` was
+    // already a string and that check (and its `.join(', ')`) was dead
+    // code. Caught by http.test.ts's array-message case.
+    const rawMessage: unknown = payload?.message ?? payload?.error;
+    const message = Array.isArray(rawMessage)
+      ? rawMessage.join(', ')
+      : (rawMessage != null ? String(rawMessage) : `HTTP ${res.status}`);
+    throw new ApiError(res.status, message);
   }
 
   if (res.status === 204) {

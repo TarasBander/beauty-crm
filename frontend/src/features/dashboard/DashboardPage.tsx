@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
 import type { Role } from '../../shared/api/types'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { todayLocalISO } from '../../shared/utils/date'
@@ -127,11 +128,11 @@ export function DashboardPage() {
 
         {dashboardQuery.isPending && <p>{t('common.loading')}</p>}
         {dashboardQuery.isError && (
-          <p className="form-error">
+          <FormError>
             {dashboardQuery.error instanceof ApiError
               ? dashboardQuery.error.message
               : t('dashboard.loadError')}
-          </p>
+          </FormError>
         )}
 
         {dashboardQuery.isSuccess && data && (

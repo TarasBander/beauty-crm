@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../api/http'
+import { FormError } from './FormError'
 
 // Мінімальна форма useQuery-результату, яку насправді використовує цей
 // компонент — не імпортуємо повний UseQueryResult<T>, щоб QueryStatus
@@ -50,9 +51,7 @@ export function QueryStatus({
 
   if (query.isError) {
     return (
-      <p className="form-error">
-        {query.error instanceof ApiError ? query.error.message : errorFallback}
-      </p>
+      <FormError>{query.error instanceof ApiError ? query.error.message : errorFallback}</FormError>
     )
   }
 

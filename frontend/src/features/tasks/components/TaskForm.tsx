@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PublicUser } from '../../../shared/api/types'
+import { FormError } from '../../../shared/components/FormError'
 import { ClientCombobox } from '../../clients/components/ClientCombobox'
 import { DealCombobox } from '../../deals/components/DealCombobox'
 import type { TaskFormValues } from '../taskForm'
@@ -90,7 +91,7 @@ export function TaskForm({
         </label>
       </div>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t('tasks.submitting') : t('tasks.submit')}

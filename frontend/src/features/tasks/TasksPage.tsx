@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
@@ -147,8 +148,8 @@ export function TasksPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
-        {exportError && <p className="form-error">{exportError}</p>}
-        {toggleError && <p className="form-error">{toggleError}</p>}
+        {exportError && <FormError>{exportError}</FormError>}
+        {toggleError && <FormError>{toggleError}</FormError>}
         {isListCapped(tasksQuery.data?.meta, tasks.length) && (
           <Banner>{t('common.incompleteData', { loaded: tasks.length, total: tasksQuery.data?.meta.total })}</Banner>
         )}

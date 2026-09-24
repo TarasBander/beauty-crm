@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
+import { FormError } from '../../shared/components/FormError'
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher'
 import { useAuth } from './AuthContext'
 
@@ -76,7 +77,7 @@ export function LoginPage() {
           />
         </label>
 
-        {error && <p className="form-error">{error}</p>}
+        {error && <FormError>{error}</FormError>}
 
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}

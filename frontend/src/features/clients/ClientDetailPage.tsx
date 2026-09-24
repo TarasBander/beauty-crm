@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { useAuth } from '../auth/AuthContext'
 import { useAllUsers } from '../users/hooks'
@@ -80,8 +81,8 @@ export function ClientDetailPage() {
       </Link>
 
       {clientQuery.isPending && <p>{t('clients.detail.loading')}</p>}
-      {notFound && <p className="form-error">{t('clients.detail.notFound')}</p>}
-      {loadError && <p className="form-error">{loadError}</p>}
+      {notFound && <FormError>{t('clients.detail.notFound')}</FormError>}
+      {loadError && <FormError>{loadError}</FormError>}
 
       {client && !notFound && !loadError && (
         <>

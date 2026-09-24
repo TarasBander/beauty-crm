@@ -38,4 +38,16 @@ i18n.use(initReactI18next).init({
   },
 })
 
+// index.html ships a static lang="uk" (today's default language) purely
+// as a sane fallback for the instant before JS runs — this keeps
+// <html lang> in sync with whatever's actually showing from here on,
+// both on load (LanguageSwitcher may have picked a different stored
+// language) and on every later switch. Matters for screen readers
+// (pronunciation/voice) and browser translate prompts, which both key
+// off this attribute rather than guessing from page content.
+document.documentElement.lang = i18n.language
+i18n.on('languageChanged', (lang) => {
+  document.documentElement.lang = lang
+})
+
 export default i18n

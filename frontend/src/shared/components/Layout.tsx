@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
 import type { Role } from '../api/types'
 import { ErrorBoundary } from './ErrorBoundary'
+import { FormError } from './FormError'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
 // roles: undefined означає "видно всім залогіненим"; коли список заданий,
@@ -77,13 +78,14 @@ export function Layout() {
             className="burger-button"
             aria-label={t('nav.menu')}
             aria-expanded={isMobileNavOpen}
+            aria-controls="mobile-nav-panel"
             onClick={() => setIsMobileNavOpen((open) => !open)}
           >
             {isMobileNavOpen ? '✕' : '☰'}
           </button>
         </div>
 
-        <div className={`mobile-nav-panel ${isMobileNavOpen ? 'open' : ''}`}>
+        <div id="mobile-nav-panel" className={`mobile-nav-panel ${isMobileNavOpen ? 'open' : ''}`}>
           <nav className="nav nav-mobile">
             {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} onClick={closeMobileNav}>
@@ -121,7 +123,7 @@ export function Layout() {
             на інший пункт меню (шапка й так лишається робочою) — новий
             key монтує ErrorBoundary заново з чистим hasError, замість
             того, щоб застрягти на fallback назавжди. */}
-        <ErrorBoundary key={location.pathname} fallback={<p className="form-error">{t('errors.pageCrashed')}</p>}>
+        <ErrorBoundary key={location.pathname} fallback={<FormError>{t('errors.pageCrashed')}</FormError>}>
           <Outlet />
         </ErrorBoundary>
       </main>

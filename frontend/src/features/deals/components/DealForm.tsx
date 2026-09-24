@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PublicUser } from '../../../shared/api/types'
+import { FormError } from '../../../shared/components/FormError'
 import { ClientCombobox } from '../../clients/components/ClientCombobox'
 import type { DealFormValues } from '../dealForm'
 
@@ -79,7 +80,7 @@ export function DealForm({
         <textarea rows={2} value={values.notes} onChange={(e) => set('notes', e.target.value)} maxLength={2000} />
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <button type="submit" disabled={isSubmitting || !values.clientId}>
         {isSubmitting ? t('deals.submitting') : t('deals.submit')}

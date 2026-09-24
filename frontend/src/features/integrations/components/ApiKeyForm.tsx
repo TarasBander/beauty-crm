@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FormError } from '../../../shared/components/FormError'
 
 interface ApiKeyFormProps {
   name: string
@@ -25,7 +26,7 @@ export function ApiKeyForm({ name, onNameChange, onSubmit, isSubmitting, error }
         />
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t('integrations.submitting') : t('integrations.submit')}

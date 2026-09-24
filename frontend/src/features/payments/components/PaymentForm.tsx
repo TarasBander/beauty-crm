@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FormError } from '../../../shared/components/FormError'
 import { DealCombobox } from '../../deals/components/DealCombobox'
 import type { PaymentFormValues } from '../paymentForm'
 import type { PaymentMethod } from '../api'
@@ -61,7 +62,7 @@ export function PaymentForm({ values, onChange, onSubmit, isSubmitting, error }:
         <textarea rows={2} value={values.notes} onChange={(e) => set('notes', e.target.value)} maxLength={2000} />
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <button type="submit" disabled={isSubmitting || !values.dealId}>
         {isSubmitting ? t('payments.submitting') : t('payments.submit')}

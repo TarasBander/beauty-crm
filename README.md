@@ -68,7 +68,11 @@ npm run dev:backend    # http://localhost:3000
 npm run dev:frontend   # http://localhost:5173
 ```
 
-Vite проксіює запити з `/api/*` на backend (`http://localhost:3000`).
+Vite проксіює запити з `/api/*` на backend (`http://localhost:3000`) —
+цей проксі є лише в dev-режимі (`vite.config.ts`). У проді фронтенд і
+бекенд мають бути за одним origin (reverse proxy на `/api/*`), або треба
+задати `VITE_API_BASE` на build-етапі (див. `frontend/.env.example`) —
+інакше `fetch('/api/...')` піде в нікуди.
 
 ### Перевірка
 

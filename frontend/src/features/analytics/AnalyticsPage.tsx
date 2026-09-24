@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { formatMoney } from '../../shared/utils/money'
 import { useAnalyticsDashboard } from './hooks'
@@ -31,9 +32,7 @@ export function AnalyticsPage() {
   if (isError || !data) {
     return (
       <Page title={t('analytics.title')}>
-        <p className="form-error">
-          {error instanceof ApiError ? error.message : t('analytics.loadError')}
-        </p>
+        <FormError>{error instanceof ApiError ? error.message : t('analytics.loadError')}</FormError>
       </Page>
     )
   }

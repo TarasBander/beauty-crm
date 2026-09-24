@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, messageFrom } from '../../shared/api/http'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { Pagination } from '../../shared/components/Pagination'
 import { QueryStatus } from '../../shared/components/QueryStatus'
@@ -54,12 +55,22 @@ export function IntegrationsPage() {
     }
   }
 
+  // "Скопійовано!" на кнопці на 2с — таймер живе тут, а не в copyRawKey,
+  // саме щоб мати cleanup: якщо компонент розмонтується (користувач пішов
+  // зі сторінки) раніше, ніж таймер спрацює, ефект прибере його за собою
+  // замість того, щоб він через 2с викликав setState на вже
+  // розмонтованому компоненті.
+  useEffect(() => {
+    if (!copyHint) return
+    const id = setTimeout(() => setCopyHint(false), 2000)
+    return () => clearTimeout(id)
+  }, [copyHint])
+
   const copyRawKey = async () => {
     if (!revealedKey) return
     try {
       await navigator.clipboard.writeText(revealedKey.rawKey)
       setCopyHint(true)
-      setTimeout(() => setCopyHint(false), 2000)
     } catch {
       // clipboard permission denied — the key is still selectable/visible
     }
@@ -100,7 +111,7 @@ export function IntegrationsPage() {
       </Card>
 
       <Card title={t('integrations.listTitle')}>
-        {revokeError && <p className="form-error">{revokeError}</p>}
+        {revokeError && <FormError>{revokeError}</FormError>}
         <QueryStatus
           query={apiKeysQuery}
           errorFallback={t('integrations.loadError')}

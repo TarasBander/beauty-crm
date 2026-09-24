@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { Pagination } from '../../shared/components/Pagination'
 import { QueryStatus } from '../../shared/components/QueryStatus'
@@ -101,7 +102,7 @@ export function ClientsPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
-        {exportError && <p className="form-error">{exportError}</p>}
+        {exportError && <FormError>{exportError}</FormError>}
         <QueryStatus
           query={clientsQuery}
           loadingText={t('clients.loading')}

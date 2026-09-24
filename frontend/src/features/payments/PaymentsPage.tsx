@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
+import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
@@ -144,8 +145,8 @@ export function PaymentsPage() {
         }
       >
         {exportWarning && <Banner>{exportWarning}</Banner>}
-        {exportError && <p className="form-error">{exportError}</p>}
-        {markPaidError && <p className="form-error">{markPaidError}</p>}
+        {exportError && <FormError>{exportError}</FormError>}
+        {markPaidError && <FormError>{markPaidError}</FormError>}
         {isListCapped(paymentsQuery.data?.meta, payments.length) && (
           <Banner>
             {t('common.incompleteData', { loaded: payments.length, total: paymentsQuery.data?.meta.total })}

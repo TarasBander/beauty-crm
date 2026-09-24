@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Role } from '../../../shared/api/types'
+import { FormError } from '../../../shared/components/FormError'
 import type { UserFormValues } from '../userForm'
 
 interface UserFormProps {
@@ -77,7 +78,7 @@ export function UserForm({ values, onChange, canAssignAdmin, onSubmit, isSubmitt
         </select>
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? t('users.submitting') : t('users.submit')}

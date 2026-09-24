@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PublicUser } from '../../../shared/api/types'
+import { FormError } from '../../../shared/components/FormError'
 import type { ClientFormValues } from '../clientForm'
 
 interface ClientFormProps {
@@ -136,7 +137,7 @@ export function ClientForm({
         </select>
       </label>
 
-      {error && <p className="form-error">{error}</p>}
+      {error && <FormError>{error}</FormError>}
 
       <div className="form-row">
         <button type="submit" disabled={isSubmitting}>
