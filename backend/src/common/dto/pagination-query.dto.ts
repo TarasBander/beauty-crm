@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 /** Keep list responses bounded no matter how large a table grows. */
 export const DEFAULT_PAGE_SIZE = 20;
@@ -24,4 +24,16 @@ export class PaginationQueryDto {
   @Min(1)
   @Max(MAX_PAGE_SIZE)
   limit?: number = DEFAULT_PAGE_SIZE;
+
+  /**
+   * Free-text search, matched against whatever fields the resource's own
+   * service considers searchable (see clients.service.ts / deals.service.ts).
+   * Lives on the shared DTO because it's genuinely generic — a resource
+   * that doesn't implement it just ignores the param — but what it
+   * searches is resource-specific, so it's not documented further here.
+   */
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  search?: string;
 }

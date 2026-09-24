@@ -177,6 +177,104 @@ code {
   margin: 0;
 }
 
+/* Банер чесності (shared/components/Banner.tsx) — коли список чи сума
+   на екрані порахована не з усіх рядків (useAllX капований на 100) і
+   CSV-експорт, що вперся в maxPages. Бурштиновий, не червоний — це не
+   помилка, а прозоре попередження. */
+.data-warning {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 0.85rem;
+}
+
+/* --- Комбобокс із пошуком на сервері (SearchSelect.tsx) --- */
+
+.search-select {
+  position: relative;
+}
+
+.search-select input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.6rem 2rem 0.6rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.search-select-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem 0.3rem;
+}
+
+.search-select-clear:hover {
+  color: var(--color-text);
+}
+
+.search-select-dropdown {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(43, 39, 52, 0.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.search-select-dropdown li + li {
+  margin-top: 0.15rem;
+}
+
+.search-select-dropdown button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-select-dropdown button:hover {
+  background: var(--color-primary-light);
+}
+
+.search-select-sublabel {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.search-select-hint {
+  padding: 0.5rem 0.6rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
 /* --- App layout --- */
 
 .layout {

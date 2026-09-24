@@ -22,6 +22,12 @@
   "common": {
     "loading": "Завантаження…",
     "exportCsv": "Експорт CSV",
+    "clear": "Очистити",
+    "searching": "Пошук…",
+    "typeToSearch": "Почніть вводити для пошуку…",
+    "noResults": "Нічого не знайдено",
+    "incompleteData": "Показано {{loaded}} з {{total}}. Підсумки можуть бути неповними.",
+    "exportTruncated": "Експортовано перші {{count}} з {{total}} рядків — файл неповний.",
     "pagination": {
       "prev": "Назад",
       "next": "Далі",
@@ -150,6 +156,7 @@
     "loadError": "Не вдалося завантажити угоди",
     "createError": "Не вдалося створити угоду",
     "emptyColumn": "Немає угод",
+    "cardsIncomplete": "Показано {{loaded}} з {{total}} угод на цій стадії — решта карток поки не завантажена.",
     "pipelineTitle": "Стадії угод",
     "carousel": {
       "prev": "Попередня стадія",

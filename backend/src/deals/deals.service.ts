@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, type FindOptionsWhere, Repository } from 'typeorm';
 import { ClientsService } from '../clients/clients.service.js';
 import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
-import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { DealStage } from '../common/enums/deal-stage.enum.js';
 import { paginate } from '../common/pagination.util.js';
+import { escapeLikeTerm } from '../common/search.util.js';
 import { CreateDealDto } from './dto/create-deal.dto.js';
+import type { ListDealsQueryDto } from './dto/list-deals-query.dto.js';
 import { UpdateDealDto } from './dto/update-deal.dto.js';
 import { Deal } from './entities/deal.entity.js';
 
@@ -57,8 +58,23 @@ export class DealsService {
     return this.findById(id);
   }
 
-  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Deal>> {
-    return paginate(this.dealsRepository, query, { order: { createdAt: 'DESC' } });
+  /**
+   * `search` matches the deal title; `clientId` (from the deal combobox
+   * in TaskForm, which already knows which client the task is for)
+   * narrows to that client's deals. Combined, both conditions must hold —
+   * unlike ClientsService.buildSearchWhere, this isn't an OR across
+   * fields, just one optional filter (title) plus one optional scope
+   * (clientId) applied together.
+   */
+  findAllPaginated(query: ListDealsQueryDto): Promise<PaginatedResult<Deal>> {
+    const search = query.search?.trim();
+    let where: FindOptionsWhere<Deal> | undefined;
+    if (search || query.clientId) {
+      where = {};
+      if (search) where.title = ILike(`%${escapeLikeTerm(search)}%`);
+      if (query.clientId) where.clientId = query.clientId;
+    }
+    return paginate(this.dealsRepository, query, { where, order: { createdAt: 'DESC' } });
   }
 
   /** Unpaginated — internal use only (AnalyticsService aggregates). */

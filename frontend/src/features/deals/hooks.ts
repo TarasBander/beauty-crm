@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { analyticsKeys } from '../analytics/api'
 import { useAuth } from '../auth/AuthContext'
 import { dealKeys, dealsApi, type CreateDealDto, type Deal, type UpdateDealDto } from './api'
 
@@ -16,14 +17,16 @@ export function useDeals(params: PaginationParams = {}) {
 }
 
 /**
- * Воронка (канбан) розкладає всі угоди по стадіях і показує суму по
- * кожній стадії, тож їй потрібен увесь набір даних одразу, а не одна
- * сторінка за раз — пагінована таблиця показувала б неправильні суми,
- * поки угода з наступної сторінки ще не завантажена. Це той самий
- * useDeals() зверху з limit = SELECT_PAGE_SIZE (100, максимум бекенду) —
- * межа тримає запит обмеженим; якщо в CRM стане більше відкритих угод,
- * розкладку по стадіях краще перенести на окремий агрегатний ендпоінт
- * бекенду, а не піднімати ліміт далі.
+ * Картки канбану — це той самий useDeals() зверху з limit =
+ * SELECT_PAGE_SIZE (100, максимум бекенду), тож видно щонайбільше 100
+ * карток одразу. Раніше з цього ж капованого списку рахувались і суми
+ * по стадіях — тепер ні: кількість і сума на кожній стадії (DealBoard,
+ * kanban-tab-count/kanban-column-total) беруться з
+ * /analytics/dashboard, який рахує з УСІХ угод у базі, а не з цих 100.
+ * Сам капований список тут лишається лише джерелом карток, які реально
+ * рендеряться в колонці — якщо їх на стадії більше, ніж завантажено,
+ * DealsPage і DealBoard показують про це банер (дивись Banner.tsx),
+ * а не мовчать.
  */
 export function useAllDeals() {
   return useDeals({ page: 1, limit: SELECT_PAGE_SIZE })
@@ -38,6 +41,13 @@ export function useCreateDeal() {
     mutationFn: (dto: CreateDealDto) => dealsApi.create(token as string, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dealKeys.lists() })
+      // Кількість/сума по стадіях у канбані (DealBoard) і KPI на
+      // дашборді читаються з /analytics/dashboard, окремого кешу від
+      // dealKeys — без цього нова угода з'явилась би в капованому
+      // списку карток одразу, а лічильник на вкладці стадії лишався б
+      // застарілим, поки хтось не відкриє сторінку "Аналітика" чи
+      // дашборд і не протухне кеш якимсь іншим шляхом.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }
@@ -82,6 +92,9 @@ export function useUpdateDeal() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: dealKeys.lists() })
+      // Стадія змінилась — і лічильник, і сума по обох стадіях
+      // (звідки й куди "переїхала" картка) застаріли в аналітиці теж.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }

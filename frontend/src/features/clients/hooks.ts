@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { analyticsKeys } from '../analytics/api'
 import { useAuth } from '../auth/AuthContext'
 import { clientKeys, clientsApi, type CreateClientDto, type UpdateClientDto } from './api'
 
@@ -18,13 +19,6 @@ export function useClients(params: PaginationParams = {}) {
     // замість екрана завантаження — так перемикання сторінок не блимає.
     placeholderData: (prev) => prev,
   })
-}
-
-/** "Практично всі клієнти" для випадаючих списків в інших місцях
- * застосунку (форми угод/задач) — це той самий useClients() зверху,
- * просто з великим limit, а не окрема пагінована таблиця клієнтів. */
-export function useAllClients() {
-  return useClients({ page: 1, limit: SELECT_PAGE_SIZE })
 }
 
 // useQuery для картки одного клієнта (сторінка деталей) — окремий
@@ -49,6 +43,9 @@ export function useCreateClient() {
     mutationFn: (dto: CreateClientDto) => clientsApi.create(token as string, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() })
+      // "Клієнтів усього" на дашборді читається з /analytics/dashboard —
+      // окремий кеш, який теж треба протухнути.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { analyticsKeys } from '../analytics/api'
 import { useAuth } from '../auth/AuthContext'
 import {
   paymentKeys,
@@ -20,9 +21,15 @@ export function usePayments(params: PaginationParams = {}) {
   })
 }
 
-/** Смуга "отримано/очікується" підсумовує всі платежі, а не одну
- * сторінку — та сама логіка, що й у useAllDeals(). Обмежено
- * SELECT_PAGE_SIZE. */
+/**
+ * Список платежів на сторінці "Платежі" — той самий usePayments()
+ * зверху з limit = SELECT_PAGE_SIZE (100). Смуга "отримано/очікується"
+ * з цього списку більше НЕ рахується — вона йде з
+ * /analytics/dashboard (payments.totalPaid/totalPending, рахує з УСІХ
+ * платежів). Цей хук лишається лише джерелом рядків самої таблиці;
+ * якщо платежів більше, ніж завантажено, PaymentsPage показує банер
+ * (дивись Banner.tsx), а не мовчить про різницю.
+ */
 export function useAllPayments() {
   return usePayments({ page: 1, limit: SELECT_PAGE_SIZE })
 }
@@ -35,6 +42,9 @@ export function useCreatePayment() {
     mutationFn: (dto: CreatePaymentDto) => paymentsApi.create(token as string, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.lists() })
+      // Смуга "отримано/очікується" читається з /analytics/dashboard —
+      // окремий кеш від paymentKeys, теж треба протухнути.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }
@@ -73,6 +83,9 @@ export function useUpdatePayment() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.lists() })
+      // "Позначено оплаченим" рухає гроші з очікується → отримано в тій
+      // самій смузі — застаріла без цього.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }

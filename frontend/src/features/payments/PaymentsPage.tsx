@@ -1,14 +1,17 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { todayLocalISO } from '../../shared/utils/date'
 import { formatMoney } from '../../shared/utils/money'
+import { isListCapped } from '../../shared/utils/pagination'
+import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
-import { useAllDeals } from '../deals/hooks'
+import { useDeals } from '../deals/hooks'
 import { PaymentForm } from './components/PaymentForm'
 import { PaymentTable } from './components/PaymentTable'
 import { emptyPaymentForm, toCreatePaymentDto, type PaymentFormValues } from './paymentForm'
@@ -24,16 +27,23 @@ export function PaymentsPage() {
   const { t, i18n } = useTranslation()
 
   const paymentsQuery = useAllPayments()
-  const dealsQuery = useAllDeals()
+  // Легкий запит лише щоб дізнатись, чи є взагалі хоч одна угода (для
+  // підказки "спершу створіть угоду") — не 100 угод заради однієї
+  // перевірки "> 0", як було раніше через useAllDeals().
+  const hasDealsQuery = useDeals({ limit: 1 })
+  // Отримано/очікується — з /analytics/dashboard, пораховане з УСІХ
+  // платежів у базі, а не з capped paymentsQuery (SELECT_PAGE_SIZE=100).
+  const analyticsQuery = useAnalyticsDashboard()
   const createPayment = useCreatePayment()
   const updatePayment = useUpdatePayment()
 
   const payments = paymentsQuery.data?.data ?? EMPTY_PAYMENTS
-  const deals = dealsQuery.data?.data ?? []
+  const hasDeals = (hasDealsQuery.data?.meta.total ?? 0) > 0
 
   const [form, setForm] = useState<PaymentFormValues>(emptyPaymentForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [exportWarning, setExportWarning] = useState<string | null>(null)
 
   const [markingPaidId, setMarkingPaidId] = useState<string | null>(null)
 
@@ -61,20 +71,20 @@ export function PaymentsPage() {
 
   const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 
-  const totals = useMemo(() => {
-    const paid = payments.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0)
-    const pending = payments.filter((p) => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0)
-    return { paid, pending }
-  }, [payments])
+  const totals = {
+    paid: analyticsQuery.data?.payments.totalPaid ?? 0,
+    pending: analyticsQuery.data?.payments.totalPending ?? 0,
+  }
 
   const exportPayments = async () => {
     if (!token) return
     setIsExporting(true)
+    setExportWarning(null)
     try {
-      const all = await exportAllPayments(token)
+      const { rows, truncated, total } = await exportAllPayments(token)
       downloadCsv(
         'payments.csv',
-        all.map((p) => ({
+        rows.map((p) => ({
           deal: p.deal.title,
           client: `${p.deal.client.firstName} ${p.deal.client.lastName}`,
           amount: p.amount,
@@ -83,6 +93,9 @@ export function PaymentsPage() {
           paidAt: p.paidAt ?? '',
         })),
       )
+      if (truncated) {
+        setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
+      }
     } finally {
       setIsExporting(false)
     }
@@ -102,13 +115,10 @@ export function PaymentsPage() {
       </div>
 
       <Card title={t('payments.addTitle')}>
-        {deals.length === 0 && !paymentsQuery.isPending && (
-          <p className="subtitle">{t('payments.noDealsHint')}</p>
-        )}
+        {!hasDeals && !hasDealsQuery.isPending && <p className="subtitle">{t('payments.noDealsHint')}</p>}
         <PaymentForm
           values={form}
           onChange={setForm}
-          deals={deals}
           onSubmit={handleSubmit}
           isSubmitting={createPayment.isPending}
           error={formError}
@@ -125,6 +135,12 @@ export function PaymentsPage() {
           )
         }
       >
+        {exportWarning && <Banner>{exportWarning}</Banner>}
+        {isListCapped(paymentsQuery.data?.meta, payments.length) && (
+          <Banner>
+            {t('common.incompleteData', { loaded: payments.length, total: paymentsQuery.data?.meta.total })}
+          </Banner>
+        )}
         <QueryStatus
           query={paymentsQuery}
           loadingText={t('payments.loading')}

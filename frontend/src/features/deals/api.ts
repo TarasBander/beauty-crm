@@ -42,6 +42,13 @@ export interface CreateDealDto {
 
 export type UpdateDealDto = Partial<CreateDealDto>;
 
+/** `clientId` narrows the list to one client's deals — used by the deal
+ * combobox in TaskForm, which already knows which client the task is
+ * for and shouldn't offer deals belonging to someone else. */
+export interface DealListParams extends PaginationParams {
+  clientId?: string;
+}
+
 // Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
 // у features/clients/api.ts (дивись коментар там).
 export const dealKeys = {
@@ -53,7 +60,7 @@ export const dealKeys = {
 };
 
 export const dealsApi = {
-  list: (token: string, params: PaginationParams = {}) =>
+  list: (token: string, params: DealListParams = {}) =>
     request<PaginatedResult<Deal>>(`/deals${toQueryString(params)}`, { token }),
 
   create: (token: string, dto: CreateDealDto) =>

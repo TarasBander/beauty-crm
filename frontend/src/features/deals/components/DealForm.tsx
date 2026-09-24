@@ -1,13 +1,12 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PublicUser } from '../../../shared/api/types'
-import type { Client } from '../../clients/api'
+import { ClientCombobox } from '../../clients/components/ClientCombobox'
 import type { DealFormValues } from '../dealForm'
 
 interface DealFormProps {
   values: DealFormValues
   onChange: (values: DealFormValues) => void
-  clients: Client[]
   managers: PublicUser[]
   currentUserFirstName?: string
   onSubmit: (event: FormEvent) => void
@@ -16,11 +15,12 @@ interface DealFormProps {
 }
 
 /** Поля форми нової угоди — сама сторінка (DealsPage) відповідає за
- * стан, мутацію і підказку "спершу додайте клієнта". */
+ * стан, мутацію і підказку "спершу додайте клієнта". Клієнта шукають
+ * через ClientCombobox (пошук на сервері), а не обирають зі
+ * заздалегідь завантаженого списку — дивись SearchSelect.tsx. */
 export function DealForm({
   values,
   onChange,
-  clients,
   managers,
   currentUserFirstName,
   onSubmit,
@@ -53,17 +53,12 @@ export function DealForm({
         </label>
         <label>
           {t('deals.field.client')}
-          <select value={values.clientId} onChange={(e) => set('clientId', e.target.value)} required>
-            <option value="" disabled>
-              {t('deals.field.selectClient')}
-            </option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.firstName} {c.lastName}
-                {c.salonName ? ` — ${c.salonName}` : ''}
-              </option>
-            ))}
-          </select>
+          <ClientCombobox
+            value={values.clientId}
+            onChange={(id) => set('clientId', id)}
+            placeholder={t('deals.field.selectClient')}
+            required
+          />
         </label>
       </div>
 
@@ -86,7 +81,7 @@ export function DealForm({
 
       {error && <p className="form-error">{error}</p>}
 
-      <button type="submit" disabled={isSubmitting || clients.length === 0}>
+      <button type="submit" disabled={isSubmitting || !values.clientId}>
         {isSubmitting ? t('deals.submitting') : t('deals.submit')}
       </button>
     </form>

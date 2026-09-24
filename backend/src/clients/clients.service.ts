@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, type FindOptionsWhere, Repository } from 'typeorm';
 import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
 import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { paginate } from '../common/pagination.util.js';
+import { escapeLikeTerm } from '../common/search.util.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 import { Client } from './entities/client.entity.js';
@@ -61,10 +62,32 @@ export class ClientsService {
     return this.findById(id);
   }
 
+  /**
+   * OR-matches `search` against every field someone would plausibly type
+   * to find a client by — name, phone, email, salon — as a list of
+   * single-field ILike conditions (TypeORM reads an array of
+   * FindOptionsWhere as OR, not AND). Used by /clients?search=... itself
+   * and by the client combobox in deal/task forms (see
+   * shared/components/SearchSelect.tsx on the frontend), which replaced
+   * loading up to 100 clients into a <select> and silently never showing
+   * client 101.
+   */
+  private buildSearchWhere(search: string): FindOptionsWhere<Client>[] {
+    const pattern = `%${escapeLikeTerm(search.trim())}%`;
+    return [
+      { firstName: ILike(pattern) },
+      { lastName: ILike(pattern) },
+      { phone: ILike(pattern) },
+      { email: ILike(pattern) },
+      { salonName: ILike(pattern) },
+    ];
+  }
+
   /** Paginated list — what the /clients controller and the public
    * integrations API return. */
   findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Client>> {
-    return paginate(this.clientsRepository, query, { order: { createdAt: 'DESC' } });
+    const where = query.search?.trim() ? this.buildSearchWhere(query.search) : undefined;
+    return paginate(this.clientsRepository, query, { where, order: { createdAt: 'DESC' } });
   }
 
   /** Unpaginated — for internal callers that need every row, like

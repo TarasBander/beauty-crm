@@ -9,7 +9,6 @@ import { todayLocalISO } from '../../shared/utils/date'
 import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
 import { useAnalyticsDashboard } from '../analytics/hooks'
-import { useAllTasks } from '../tasks/hooks'
 
 // roles: як і в Layout.tsx — undefined значить "плитка для всіх", інакше
 // показуємо лише переліченим ролям. Без цього плитка на /users вела б
@@ -99,25 +98,20 @@ export function DashboardPage() {
   const { t, i18n } = useTranslation()
 
   const dashboardQuery = useAnalyticsDashboard()
-  const tasksQuery = useAllTasks()
 
   const visibleTiles = useMemo(
     () => TILES.filter((tile) => !tile.roles || (!!user && tile.roles.includes(user.role))),
     [user],
   )
 
-  const upcomingTasks = useMemo(() => {
-    const tasks = tasksQuery.data?.data ?? []
-    return tasks
-      .filter((task) => task.status === 'pending')
-      .sort((a, b) => {
-        if (!a.dueDate && !b.dueDate) return 0
-        if (!a.dueDate) return 1
-        if (!b.dueDate) return -1
-        return a.dueDate.localeCompare(b.dueDate)
-      })
-      .slice(0, 5)
-  }, [tasksQuery.data])
+  // Раніше це вважалось з useAllTasks() — окремого капованого (до 100
+  // задач) запиту, відфільтрованого й відсортованого в браузері. Задача
+  // з найближчим терміном могла опинитись у рядку 101 і ніколи сюди не
+  // потрапити. Тепер бекенд рахує ті самі топ-5 із УСІХ задач одразу в
+  // /analytics/dashboard (дивись AnalyticsService.getDashboard) — і цей
+  // самий запит вже й так завантажується вище для KPI-плиток, тож це не
+  // додатковий запит, а той самий.
+  const upcomingTasks = dashboardQuery.data?.tasks.upcoming ?? []
 
   const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 

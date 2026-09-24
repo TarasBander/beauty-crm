@@ -71,6 +71,30 @@ export class AnalyticsService {
     const pendingCount = tasks.filter((t) => t.status === TaskStatus.PENDING).length;
     const doneCount = tasks.filter((t) => t.status === TaskStatus.DONE).length;
 
+    // Dashboard's "upcoming tasks" widget used to come from the
+    // frontend's useAllTasks() — a capped first-100-tasks fetch,
+    // filtered and sorted to top 5 in the browser. Once there are more
+    // than 100 tasks, the soonest-due one could easily be sitting in row
+    // 101 and never show up. This computes the same top-5 here, from the
+    // full `tasks` array already loaded above for the other aggregates
+    // (not from a second, separately-capped fetch), so it's correct
+    // regardless of how many tasks exist.
+    const upcomingTasks = tasks
+      .filter((t) => t.status === TaskStatus.PENDING)
+      .sort((a, b) => {
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return 1;
+        if (!b.dueDate) return -1;
+        return a.dueDate.localeCompare(b.dueDate);
+      })
+      .slice(0, 5)
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        dueDate: t.dueDate,
+        client: t.client ? { id: t.client.id, firstName: t.client.firstName, lastName: t.client.lastName } : null,
+      }));
+
     // --- payments ---
     const paidPayments = payments.filter((p) => p.status === PaymentStatus.PAID);
     const pendingPayments = payments.filter((p) => p.status === PaymentStatus.PENDING);
@@ -163,6 +187,7 @@ export class AnalyticsService {
         pending: pendingCount,
         done: doneCount,
         overdue: overdueCount,
+        upcoming: upcomingTasks,
       },
       payments: {
         totalPaid,

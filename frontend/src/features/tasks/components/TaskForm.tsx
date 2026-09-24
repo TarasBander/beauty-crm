@@ -1,15 +1,13 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PublicUser } from '../../../shared/api/types'
-import type { Client } from '../../clients/api'
-import type { Deal } from '../../deals/api'
+import { ClientCombobox } from '../../clients/components/ClientCombobox'
+import { DealCombobox } from '../../deals/components/DealCombobox'
 import type { TaskFormValues } from '../taskForm'
 
 interface TaskFormProps {
   values: TaskFormValues
   onChange: (values: TaskFormValues) => void
-  clients: Client[]
-  deals: Deal[]
   managers: PublicUser[]
   currentUserFirstName?: string
   onSubmit: (event: FormEvent) => void
@@ -20,8 +18,6 @@ interface TaskFormProps {
 export function TaskForm({
   values,
   onChange,
-  clients,
-  deals,
   managers,
   currentUserFirstName,
   onSubmit,
@@ -71,31 +67,26 @@ export function TaskForm({
       <div className="form-row">
         <label>
           {t('tasks.field.client')}
-          <select
+          <ClientCombobox
             value={values.clientId}
-            onChange={(e) => onChange({ ...values, clientId: e.target.value, dealId: '' })}
-          >
-            <option value="">{t('tasks.field.notLinked')}</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.firstName} {c.lastName}
-                {c.salonName ? ` — ${c.salonName}` : ''}
-              </option>
-            ))}
-          </select>
+            // Зміна клієнта скидає вже обрану угоду — стара угода могла
+            // належати іншому клієнту (той самий захист, що й раніше,
+            // коли dealId скидався прямо тут в onChange <select>-а).
+            onChange={(id) => onChange({ ...values, clientId: id, dealId: '' })}
+            placeholder={t('tasks.field.notLinked')}
+          />
         </label>
         <label>
           {t('tasks.field.deal')}
-          <select value={values.dealId} onChange={(e) => set('dealId', e.target.value)}>
-            <option value="">{t('tasks.field.notLinked')}</option>
-            {deals
-              .filter((d) => !values.clientId || d.client.id === values.clientId)
-              .map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-          </select>
+          <DealCombobox
+            value={values.dealId}
+            onChange={(id) => set('dealId', id)}
+            placeholder={t('tasks.field.notLinked')}
+            clientId={values.clientId}
+            // Клієнта вже обрано — звужений пошук серед ЙОГО угод, тож є
+            // сенс одразу показати перші кілька навіть без набору тексту.
+            minChars={values.clientId ? 0 : 2}
+          />
         </label>
       </div>
 

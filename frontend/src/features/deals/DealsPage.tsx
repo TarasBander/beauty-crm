@@ -1,13 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { formatMoney } from '../../shared/utils/money'
+import { isListCapped } from '../../shared/utils/pagination'
+import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
-import { useAllClients } from '../clients/hooks'
+import { useClients } from '../clients/hooks'
 import { useAllUsers } from '../users/hooks'
 import { DealBoard } from './components/DealBoard'
 import { DealForm } from './components/DealForm'
@@ -20,18 +23,23 @@ export function DealsPage() {
   const { t, i18n } = useTranslation()
 
   const dealsQuery = useAllDeals()
-  const clientsQuery = useAllClients()
+  // Легкий запит лише щоб дізнатись, чи є взагалі хоч один клієнт (для
+  // підказки "спершу додайте клієнта") — не 100 клієнтів заради однієї
+  // перевірки "> 0", як було раніше через useAllClients().
+  const hasClientsQuery = useClients({ limit: 1 })
   const managersQuery = useAllUsers()
+  const analyticsQuery = useAnalyticsDashboard()
   const createDeal = useCreateDeal()
   const updateDeal = useUpdateDeal()
 
   const deals = dealsQuery.data?.data ?? []
-  const clients = clientsQuery.data?.data ?? []
   const managers = managersQuery.data?.data ?? []
+  const hasClients = (hasClientsQuery.data?.meta.total ?? 0) > 0
 
   const [form, setForm] = useState<DealFormValues>(emptyDealForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [exportWarning, setExportWarning] = useState<string | null>(null)
 
   // per-card "moving stage" flag so only the card being moved shows a
   // disabled select, instead of freezing the whole board on every move
@@ -70,11 +78,12 @@ export function DealsPage() {
   const exportDeals = async () => {
     if (!token) return
     setIsExporting(true)
+    setExportWarning(null)
     try {
-      const all = await exportAllDeals(token)
+      const { rows, truncated, total } = await exportAllDeals(token)
       downloadCsv(
         'deals.csv',
-        all.map((d) => ({
+        rows.map((d) => ({
           title: d.title,
           amount: d.amount,
           stage: t(`deals.stage.${d.stage}`),
@@ -82,6 +91,9 @@ export function DealsPage() {
           assignedTo: d.assignedTo ? `${d.assignedTo.firstName} ${d.assignedTo.lastName}` : '',
         })),
       )
+      if (truncated) {
+        setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
+      }
     } finally {
       setIsExporting(false)
     }
@@ -90,13 +102,10 @@ export function DealsPage() {
   return (
     <Page title={t('deals.title')}>
       <Card title={t('deals.addTitle')}>
-        {clients.length === 0 && !dealsQuery.isPending && (
-          <p className="subtitle">{t('deals.noClientsHint')}</p>
-        )}
+        {!hasClients && !hasClientsQuery.isPending && <p className="subtitle">{t('deals.noClientsHint')}</p>}
         <DealForm
           values={form}
           onChange={setForm}
-          clients={clients}
           managers={managers}
           currentUserFirstName={user?.firstName}
           onSubmit={handleSubmit}
@@ -117,8 +126,15 @@ export function DealsPage() {
             )
           }
         >
+          {exportWarning && <Banner>{exportWarning}</Banner>}
+          {isListCapped(dealsQuery.data?.meta, deals.length) && (
+            <Banner>
+              {t('common.incompleteData', { loaded: deals.length, total: dealsQuery.data?.meta.total })}
+            </Banner>
+          )}
           <DealBoard
             deals={deals}
+            stageStats={analyticsQuery.data?.deals.byStage ?? []}
             activeStageIndex={activeStageIndex}
             onActiveStageIndexChange={setActiveStageIndex}
             movingDealId={movingDealId}

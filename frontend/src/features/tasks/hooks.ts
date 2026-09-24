@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { analyticsKeys } from '../analytics/api'
 import { useAuth } from '../auth/AuthContext'
 import { taskKeys, tasksApi, type CreateTaskDto, type Task, type UpdateTaskDto } from './api'
 
@@ -15,10 +16,13 @@ export function useTasks(params: PaginationParams = {}) {
 }
 
 /**
- * Вкладки-фільтри списку задач (активні/виконані/усі) показують точну
- * кількість і сортують задачі за терміном по всьому набору, а не по
- * одній сторінці — та сама логіка, що й у useAllDeals(). Обмежено
- * SELECT_PAGE_SIZE.
+ * Список задач на сторінці "Задачі" — той самий useTasks() зверху з
+ * limit = SELECT_PAGE_SIZE (100). Лічильники на вкладках
+ * (активні/виконані/усі) з цього списку більше НЕ рахуються — вони
+ * йдуть з /analytics/dashboard (рахує з УСІХ задач), TasksPage передає
+ * їх у TaskFilterTabs напряму. Цей хук лишається лише джерелом рядків
+ * самої таблиці; якщо задач більше, ніж завантажено, TasksPage показує
+ * банер (дивись Banner.tsx), а не мовчить про різницю.
  */
 export function useAllTasks() {
   return useTasks({ page: 1, limit: SELECT_PAGE_SIZE })
@@ -32,6 +36,12 @@ export function useCreateTask() {
     mutationFn: (dto: CreateTaskDto) => tasksApi.create(token as string, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+      // Лічильники вкладок (TaskFilterTabs) і "найближчі задачі" на
+      // дашборді читаються з /analytics/dashboard — окремий кеш від
+      // taskKeys, який теж треба протухнути, інакше нова задача
+      // з'явиться в таблиці, а лічильник "Активні (N)" лишиться
+      // старим.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }
@@ -68,6 +78,9 @@ export function useUpdateTask() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
+      // Виконано/активно змінилось — лічильники вкладок і "прострочені"
+      // на дашборді/аналітиці застаріли теж.
+      queryClient.invalidateQueries({ queryKey: analyticsKeys.dashboard })
     },
   })
 }

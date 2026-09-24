@@ -1,14 +1,15 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { todayLocalISO } from '../../shared/utils/date'
+import { isListCapped } from '../../shared/utils/pagination'
+import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
-import { useAllClients } from '../clients/hooks'
-import { useAllDeals } from '../deals/hooks'
 import { useAllUsers } from '../users/hooks'
 import { TaskFilterTabs } from './components/TaskFilterTabs'
 import { TaskForm } from './components/TaskForm'
@@ -28,20 +29,22 @@ export function TasksPage() {
   const { t } = useTranslation()
 
   const tasksQuery = useAllTasks()
-  const clientsQuery = useAllClients()
-  const dealsQuery = useAllDeals()
   const managersQuery = useAllUsers()
+  // Точні лічильники для вкладок (активні/виконані/усі) — з
+  // /analytics/dashboard, а не порахована тут із capped tasksQuery
+  // (SELECT_PAGE_SIZE = 100). Сам список у таблиці нижче все ще читає
+  // tasksQuery — банер під таблицею попереджає, якщо він неповний.
+  const analyticsQuery = useAnalyticsDashboard()
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
 
   const tasks = tasksQuery.data?.data ?? EMPTY_TASKS
-  const clients = clientsQuery.data?.data ?? []
-  const deals = dealsQuery.data?.data ?? []
   const managers = managersQuery.data?.data ?? []
 
   const [form, setForm] = useState<TaskFormValues>(emptyTaskForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [exportWarning, setExportWarning] = useState<string | null>(null)
 
   const [filter, setFilter] = useState<TaskFilter>('active')
   const [togglingTaskId, setTogglingTaskId] = useState<string | null>(null)
@@ -76,11 +79,12 @@ export function TasksPage() {
   const exportTasks = async () => {
     if (!token) return
     setIsExporting(true)
+    setExportWarning(null)
     try {
-      const all = await exportAllTasks(token)
+      const { rows, truncated, total } = await exportAllTasks(token)
       downloadCsv(
         'tasks.csv',
-        all.map((task) => ({
+        rows.map((task) => ({
           title: task.title,
           status: t(`tasks.filter.${task.status === 'pending' ? 'active' : 'done'}`),
           dueDate: task.dueDate ?? '',
@@ -89,13 +93,17 @@ export function TasksPage() {
           assignedTo: task.assignedTo ? `${task.assignedTo.firstName} ${task.assignedTo.lastName}` : '',
         })),
       )
+      if (truncated) {
+        setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
+      }
     } finally {
       setIsExporting(false)
     }
   }
 
-  const activeCount = tasks.filter((task) => task.status === 'pending').length
-  const doneCount = tasks.filter((task) => task.status === 'done').length
+  const activeCount = analyticsQuery.data?.tasks.pending ?? tasks.filter((task) => task.status === 'pending').length
+  const doneCount = analyticsQuery.data?.tasks.done ?? tasks.filter((task) => task.status === 'done').length
+  const totalCount = analyticsQuery.data?.tasks.total ?? tasks.length
 
   return (
     <Page title={t('tasks.title')}>
@@ -103,8 +111,6 @@ export function TasksPage() {
         <TaskForm
           values={form}
           onChange={setForm}
-          clients={clients}
-          deals={deals}
           managers={managers}
           currentUserFirstName={user?.firstName}
           onSubmit={handleSubmit}
@@ -122,7 +128,7 @@ export function TasksPage() {
               onFilterChange={setFilter}
               activeCount={activeCount}
               doneCount={doneCount}
-              totalCount={tasks.length}
+              totalCount={totalCount}
             />
             {visibleTasks.length > 0 && (
               <button type="button" onClick={exportTasks} disabled={isExporting}>
@@ -132,6 +138,10 @@ export function TasksPage() {
           </>
         }
       >
+        {exportWarning && <Banner>{exportWarning}</Banner>}
+        {isListCapped(tasksQuery.data?.meta, tasks.length) && (
+          <Banner>{t('common.incompleteData', { loaded: tasks.length, total: tasksQuery.data?.meta.total })}</Banner>
+        )}
         <QueryStatus
           query={tasksQuery}
           loadingText={t('tasks.loading')}

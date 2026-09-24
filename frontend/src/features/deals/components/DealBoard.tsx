@@ -1,9 +1,19 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { Banner } from '../../../shared/components/Banner'
 import { DEAL_STAGE_ORDER, type Deal, type DealStage } from '../api'
+import type { DealStageStat } from '../../analytics/api'
 
 interface DealBoardProps {
   deals: Deal[]
+  // Кількість і сума по кожній стадії — з /analytics/dashboard, а НЕ
+  // порахована тут із `deals`. `deals` — це капований список (до
+  // SELECT_PAGE_SIZE = 100 карток на всі стадії разом), тож рахувати
+  // "суму по стадії" з нього означало б показувати занижену суму, щойно
+  // угод стає більше за ліміт. Аналітика бекенду рахує з УСІХ угод у
+  // базі, тож ці числа завжди точні, навіть коли карток під ними
+  // видно менше (дивись stageStats нижче).
+  stageStats: DealStageStat[]
   activeStageIndex: number
   onActiveStageIndexChange: (index: number) => void
   movingDealId: string | null
@@ -19,6 +29,7 @@ interface DealBoardProps {
  */
 export function DealBoard({
   deals,
+  stageStats,
   activeStageIndex,
   onActiveStageIndexChange,
   movingDealId,
@@ -28,9 +39,15 @@ export function DealBoard({
   const { t } = useTranslation()
 
   const dealsByStage = (stage: DealStage) => deals.filter((d) => d.stage === stage)
+  const statsFor = (stage: DealStage) =>
+    stageStats.find((s) => s.stage === stage) ?? { stage, count: 0, amount: 0 }
   const activeStage = DEAL_STAGE_ORDER[activeStageIndex]
   const activeStageDeals = dealsByStage(activeStage)
-  const activeStageTotal = activeStageDeals.reduce((sum, d) => sum + d.amount, 0)
+  const activeStageStats = statsFor(activeStage)
+  // Скільки карток цієї стадії реально завантажено проти скільки їх
+  // насправді є (за аналітикою) — якщо картки не всі, кажемо про це
+  // прямо замість того, щоб мовчки показати неповний стовпець.
+  const activeStageCardsMissing = activeStageStats.count > activeStageDeals.length
 
   return (
     <>
@@ -43,7 +60,7 @@ export function DealBoard({
             onClick={() => onActiveStageIndexChange(index)}
           >
             {t(`deals.stage.${stage}`)}
-            <span className="kanban-tab-count">{dealsByStage(stage).length}</span>
+            <span className="kanban-tab-count">{statsFor(stage).count}</span>
           </button>
         ))}
       </div>
@@ -62,10 +79,15 @@ export function DealBoard({
         <div className="kanban-column kanban-column-active">
           <div className="kanban-column-header">
             <span>{t(`deals.stage.${activeStage}`)}</span>
-            <span className="kanban-column-count">{activeStageDeals.length}</span>
+            <span className="kanban-column-count">{activeStageStats.count}</span>
           </div>
-          {activeStageDeals.length > 0 && (
-            <div className="kanban-column-total">{formatAmount(activeStageTotal)}</div>
+          {activeStageStats.count > 0 && (
+            <div className="kanban-column-total">{formatAmount(activeStageStats.amount)}</div>
+          )}
+          {activeStageCardsMissing && (
+            <Banner>
+              {t('deals.cardsIncomplete', { loaded: activeStageDeals.length, total: activeStageStats.count })}
+            </Banner>
           )}
           {activeStageDeals.length === 0 && <p className="kanban-empty">{t('deals.emptyColumn')}</p>}
           <div className="kanban-column-cards">

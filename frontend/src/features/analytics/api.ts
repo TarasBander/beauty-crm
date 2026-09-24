@@ -25,6 +25,16 @@ export interface AnalyticsDashboard {
     pending: number;
     done: number;
     overdue: number;
+    // Топ-5 активних задач за терміном виконання — рахується на
+    // бекенді з УСІХ задач (AnalyticsService.getDashboard), а не з
+    // capped useAllTasks(), звідки раніше брав ці ж 5 рядків
+    // DashboardPage (дивись коментар там).
+    upcoming: {
+      id: string;
+      title: string;
+      dueDate: string | null;
+      client: { id: string; firstName: string; lastName: string } | null;
+    }[];
   };
   payments: {
     totalPaid: number;

@@ -108,6 +108,12 @@ export const SELECT_PAGE_SIZE = 100;
 export interface PaginationParams {
   page?: number;
   limit?: number;
+  // Generic free-text search, forwarded as `?search=` — ignored by
+  // endpoints that don't implement it (see backend's
+  // PaginationQueryDto). Used by SearchSelect (shared/components/
+  // SearchSelect.tsx) to query the server instead of filtering a
+  // capped, already-downloaded list.
+  search?: string;
 }
 
 export interface PaginationMeta {
@@ -132,26 +138,51 @@ export function toQueryString(params: PaginationParams): string {
   return qs ? `?${qs}` : '';
 }
 
+export interface FetchAllPagesResult<T> {
+  rows: T[];
+  // true when the walk stopped because it hit maxPages, not because it
+  // ran out of pages — i.e. `rows` is NOT every row the table has.
+  truncated: boolean;
+  // The server's own count of the total, even when truncated — lets a
+  // caller say "exported 5000 of 8300 rows" instead of just "some rows
+  // are missing".
+  total: number;
+}
+
 /**
  * Walks every page of a paginated endpoint and concatenates the rows —
  * used for CSV export, where "export" has to mean the whole table, not
  * whatever page happens to be on screen. `maxPages` is a hard safety
- * cap (default 5000 rows) so a runaway table can't turn one click into
- * an unbounded number of requests.
+ * cap (default 50 pages, i.e. 5000 rows at SELECT_PAGE_SIZE) so a
+ * runaway table can't turn one click into an unbounded number of
+ * requests.
+ *
+ * Hitting that cap used to mean the returned array was just quietly
+ * short — same bug as the `useAllX` hooks, just for CSV export instead
+ * of a dropdown. `truncated` makes that an explicit, checkable fact
+ * instead of a silent one; callers are expected to warn the user when
+ * it's true rather than hand them a "complete" export that isn't.
  */
 export async function fetchAllPages<T>(
   fetchPage: (params: PaginationParams) => Promise<PaginatedResult<T>>,
   options: { limit?: number; maxPages?: number } = {},
-): Promise<T[]> {
+): Promise<FetchAllPagesResult<T>> {
   const limit = options.limit ?? SELECT_PAGE_SIZE;
   const maxPages = options.maxPages ?? 50;
   const all: T[] = [];
   let page = 1;
+  let total = 0;
+  let truncated = false;
   while (page <= maxPages) {
     const result = await fetchPage({ page, limit });
     all.push(...result.data);
+    total = result.meta.total;
     if (page >= result.meta.totalPages) break;
+    if (page === maxPages) {
+      truncated = true;
+      break;
+    }
     page += 1;
   }
-  return all;
+  return { rows: all, truncated, total };
 }
