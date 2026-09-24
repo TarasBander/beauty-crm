@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
 import { Pagination } from '../../shared/components/Pagination'
 import type { Role } from '../../shared/api/types'
+import { useAuth } from '../auth/AuthContext'
 import { useCreateUser, useUsers } from './hooks'
 
 const emptyForm = {
@@ -15,6 +16,7 @@ const emptyForm = {
 
 export function UsersPage() {
   const { t } = useTranslation()
+  const { user: currentUser } = useAuth()
   const [page, setPage] = useState(1)
   const usersQuery = useUsers({ page })
   const createUser = useCreateUser()
@@ -95,7 +97,13 @@ export function UsersPage() {
               onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
             >
               <option value="sales_manager">{t('roles.sales_manager')}</option>
-              <option value="admin">{t('roles.admin')}</option>
+              {/* Ця сторінка вже доступна лише admin (AdminRoute у App.tsx),
+                  тож currentUser?.role тут завжди 'admin' — перевірка
+                  залишена явно, а не прибрана, щоб опція не з'явилась
+                  сама собою, якщо колись хтось послабить захист маршруту.
+                  Сервер (users.controller.ts) все одно відмовить не-admin,
+                  хто б не відправив role: 'admin' напряму через API. */}
+              {currentUser?.role === 'admin' && <option value="admin">{t('roles.admin')}</option>}
             </select>
           </label>
 

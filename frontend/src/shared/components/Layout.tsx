@@ -1,18 +1,25 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
+import type { Role } from '../api/types'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
-const NAV_ITEMS: { to: string; end?: boolean; labelKey: string }[] = [
+// roles: undefined означає "видно всім залогіненим"; коли список заданий,
+// пункт показується лише користувачам з однією з цих ролей. Це лише
+// косметика — сторінка все одно захищена AdminRoute (App.tsx), а сам API
+// відмовляє в діях, на які нема прав (наприклад users.controller.ts не
+// дозволить менеджеру призначити роль admin) — але пункт меню, який веде
+// на "Access denied", тільки заплутує.
+const NAV_ITEMS: { to: string; end?: boolean; labelKey: string; roles?: Role[] }[] = [
   { to: '/', end: true, labelKey: 'nav.dashboard' },
   { to: '/clients', labelKey: 'nav.clients' },
   { to: '/deals', labelKey: 'nav.deals' },
   { to: '/tasks', labelKey: 'nav.tasks' },
   { to: '/payments', labelKey: 'nav.payments' },
   { to: '/analytics', labelKey: 'nav.analytics' },
-  { to: '/users', labelKey: 'nav.users' },
-  { to: '/integrations', labelKey: 'nav.integrations' },
+  { to: '/users', labelKey: 'nav.users', roles: ['admin'] },
+  { to: '/integrations', labelKey: 'nav.integrations', roles: ['admin'] },
 ]
 
 // Rendered once by the layout route in App.tsx (wrapped in
@@ -25,6 +32,11 @@ export function Layout() {
 
   const closeMobileNav = () => setIsMobileNavOpen(false)
 
+  const navItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.roles || (!!user && item.roles.includes(user.role))),
+    [user],
+  )
+
   return (
     <div className="layout">
       <header className="topbar">
@@ -32,7 +44,7 @@ export function Layout() {
           <div className="brand">{t('app.name')}</div>
 
           <nav className="nav nav-desktop">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end}>
                 {t(item.labelKey)}
               </NavLink>
@@ -71,7 +83,7 @@ export function Layout() {
 
         <div className={`mobile-nav-panel ${isMobileNavOpen ? 'open' : ''}`}>
           <nav className="nav nav-mobile">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} onClick={closeMobileNav}>
                 {t(item.labelKey)}
               </NavLink>

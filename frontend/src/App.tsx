@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
+import { AdminRoute } from './shared/components/AdminRoute'
 import { Layout } from './shared/components/Layout'
 import { NotFoundPage } from './shared/components/NotFoundPage'
 import { ProtectedRoute } from './shared/components/ProtectedRoute'
@@ -69,8 +70,15 @@ function App() {
             <Route path="/tasks" element={<TasksPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/integrations" element={<IntegrationsPage />} />
+
+            {/* Другий шар захисту всередині вже захищеного layout route:
+                тільки admin проходить AdminRoute далі до Outlet, будь-кому
+                іншому — назад на "/" (див. AdminRoute.tsx). */}
+            <Route element={<AdminRoute />}>
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/integrations" element={<IntegrationsPage />} />
+            </Route>
+
             <Route path="/change-password" element={<ChangePasswordPage />} />
           </Route>
 

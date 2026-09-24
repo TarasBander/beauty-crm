@@ -2,11 +2,15 @@ import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
+import type { Role } from '../../shared/api/types'
 import { useAuth } from '../auth/AuthContext'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAllTasks } from '../tasks/hooks'
 
-const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode }[] = [
+// roles: як і в Layout.tsx — undefined значить "плитка для всіх", інакше
+// показуємо лише переліченим ролям. Без цього плитка на /users вела б
+// менеджера просто на редірект назад сюди (AdminRoute у App.tsx).
+const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode; roles?: Role[] }[] = [
   {
     to: '/clients',
     navKey: 'nav.clients',
@@ -62,6 +66,7 @@ const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode }[] 
     to: '/users',
     navKey: 'nav.users',
     descKey: 'dashboard.tile.users',
+    roles: ['admin'],
     icon: (
       <>
         <circle cx="9" cy="8" r="3" />
@@ -75,6 +80,7 @@ const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode }[] 
     to: '/integrations',
     navKey: 'nav.integrations',
     descKey: 'dashboard.tile.integrations',
+    roles: ['admin'],
     icon: (
       <>
         <path d="M9 3v4M15 3v4M6 7h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V7z" />
@@ -90,6 +96,11 @@ export function DashboardPage() {
 
   const dashboardQuery = useAnalyticsDashboard()
   const tasksQuery = useAllTasks()
+
+  const visibleTiles = useMemo(
+    () => TILES.filter((tile) => !tile.roles || (!!user && tile.roles.includes(user.role))),
+    [user],
+  )
 
   const upcomingTasks = useMemo(() => {
     const tasks = tasksQuery.data?.data ?? []
@@ -158,7 +169,7 @@ export function DashboardPage() {
       <section className="card">
         <h2>{t('dashboard.quickAccessTitle')}</h2>
         <div className="dashboard-tiles">
-          {TILES.map((tile) => (
+          {visibleTiles.map((tile) => (
             <Link key={tile.to} to={tile.to} className="dashboard-tile">
               <svg
                 className="dashboard-tile-icon"
