@@ -6,8 +6,9 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getStoredToken, setStoredToken } from '../../shared/api/http'
+import { getStoredToken, setStoredToken, setUnauthorizedHandler } from '../../shared/api/http'
 import type { PublicUser } from '../../shared/api/types'
 import { authApi } from './api'
 
@@ -26,6 +27,8 @@ const meQueryKey = (token: string | null) => ['auth', 'me', token] as const
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(() => getStoredToken())
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   // useQuery для перевірки "чи я залогінений": робить GET /auth/me і
   // кладе відповідь у кеш React Query під ключем meQueryKey(token) —
@@ -44,14 +47,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    // Збережений токен, який бекенд більше не приймає (протух,
-    // відкликаний) — прибираємо його, щоб ProtectedRoute перекинув на
-    // /login, а не завис на екрані завантаження назавжди.
-    if (token && meQuery.isError) {
-      setStoredToken(null)
+    // Єдине місце, де "сесія протухла" перетворюється на дію: http.ts
+    // викликає це, коли будь-який запит із токеном (не лише /auth/me —
+    // так само таблиця клієнтів, збереження угоди, що завгодно) отримує
+    // у відповідь 401. Чистимо кеш React Query (щоб застарілі дані
+    // попереднього користувача не блимнули після наступного логіну) і
+    // ведемо на /login через React Router — без перезавантаження
+    // сторінки, із запам'ятовуванням, де користувач був (той самий
+    // "from", що й у ProtectedRoute — див. LoginPage.tsx).
+    setUnauthorizedHandler(() => {
       setTokenState(null)
-    }
-  }, [token, meQuery.isError])
+      queryClient.clear()
+      navigate('/login', { replace: true, state: { from: location.pathname } })
+    })
+    return () => setUnauthorizedHandler(null)
+  }, [navigate, queryClient, location.pathname])
 
   const login = useCallback(
     async (email: string, password: string) => {

@@ -23,6 +23,23 @@ export function setStoredToken(token: string | null) {
   }
 }
 
+// --- Сесія протухла ----------------------------------------------------
+//
+// JWT живе добу. Коли він протухає (чи бекенд його інакше відкликав),
+// про це дізнається перший-ліпший запит, який трапиться далі — таблиця
+// клієнтів, збереження угоди, що завгодно. Замість того, щоб кожен
+// useQuery/useMutation у застосунку окремо перевіряв "а може це 401,
+// може мене розлогінило", request() нижче ловить це в одному місці й
+// сповіщає AuthProvider через цей колбек. AuthProvider (AuthContext.tsx)
+// реєструє його при монтуванні: чистить кеш React Query і веде
+// користувача на /login через React Router, не перезавантажуючи сторінку.
+type UnauthorizedHandler = () => void;
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
+  unauthorizedHandler = handler;
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
@@ -48,6 +65,19 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   });
 
   if (!res.ok) {
+    // 401 на запиті, який ніс токен, означає не "ця операція не
+    // вдалась", а "сесія мертва" — бекенд відхилив сам токен, а не
+    // облікові дані. (Невдалий логін теж повертає 401, але без токена в
+    // заголовку — той випадок сюди не потрапляє і лишається звичайною
+    // помилкою форми входу.) Тут ми один раз чистимо збережений токен і
+    // віддаємо керування AuthProvider — решта коду нижче все одно кине
+    // ApiError, тож сторінка, що ініціювала запит, теж дізнається, що
+    // він не вдався.
+    if (res.status === 401 && options.token) {
+      setStoredToken(null);
+      unauthorizedHandler?.();
+    }
+
     const payload = await res.json().catch(() => null);
     const message =
       (payload && (payload.message?.toString?.() ?? payload.error)) ??
