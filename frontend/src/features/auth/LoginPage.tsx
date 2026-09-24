@@ -5,6 +5,10 @@ import { ApiError } from '../../shared/api/http'
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher'
 import { useAuth } from './AuthContext'
 
+// Стан, який ProtectedRoute кладе в location.state перед редіректом на
+// /login: шлях, з якого користувача завернули (див. ProtectedRoute.tsx).
+type LoginLocationState = { from?: string }
+
 export function LoginPage() {
   const { user, isLoading, login } = useAuth()
   const navigate = useNavigate()
@@ -16,8 +20,11 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Куди повернути користувача: шлях, з якого його завернув ProtectedRoute
+  // (наприклад /clients/abc), або '/', якщо він прийшов на /login напряму.
+  const redirectTo = (location.state as LoginLocationState | null)?.from ?? '/'
+
   if (!isLoading && user) {
-    const redirectTo = (location.state as { from?: string } | null)?.from ?? '/'
     return <Navigate to={redirectTo} replace />
   }
 
@@ -27,7 +34,9 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       await login(email, password)
-      navigate('/', { replace: true })
+      // replace: true — форма логіну не залишається в історії, тож "Назад"
+      // не повертає на неї.
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('auth.login.genericError'))
     } finally {
