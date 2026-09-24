@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
@@ -7,7 +7,7 @@ import { Page } from '../../shared/components/Page'
 import { useAuth } from '../auth/AuthContext'
 import { useAllUsers } from '../users/hooks'
 import { ClientForm } from './components/ClientForm'
-import { clientToFormValues, emptyClientForm, toUpdateClientDto, type ClientFormValues } from './clientForm'
+import { clientToFormValues, emptyClientForm, toClientWriteDto, type ClientFormValues } from './clientForm'
 import { useClient, useUpdateClient } from './hooks'
 
 export function ClientDetailPage() {
@@ -25,13 +25,19 @@ export function ClientDetailPage() {
   const [form, setForm] = useState<ClientFormValues>(emptyClientForm)
   const [formError, setFormError] = useState<string | null>(null)
 
-  // Keep the edit form in sync whenever a freshly loaded/updated client
-  // arrives, as long as the user isn't mid-edit (don't clobber unsaved input).
-  useEffect(() => {
-    if (client && !isEditing) setForm(clientToFormValues(client))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client])
-
+  // Форма наповнюється значеннями клієнта в момент кліку "Редагувати" —
+  // не через useEffect, що мовчки "підтягує" клієнта в форму щоразу, як
+  // тільки query оновлюється. Раніше тут був саме такий ефект із
+  // залежністю лише на client і вимкненим exhaustive-deps: усередині
+  // він читав ще й isEditing, який мав би бути в масиві залежностей, але
+  // якби він там був — ефект перезаписував би форму значеннями сервера
+  // при кожній зміні isEditing, стираючи те, що людина щойно ввела.
+  // Вимкнене правило ховало саме той клас багів (застарілий/неочікувано
+  // переписаний стан), для запобігання якому воно існує. Форма, яку
+  // тримають "у синхронізації з сервером" через ефект — відомий
+  // React-капкан: поки isEditing === false, форму все одно ніхто не
+  // бачить, тож синхронізувати її "про запас" нема сенсу — досить
+  // наповнити її один раз, коли вона стає видимою.
   const startEditing = () => {
     if (client) setForm(clientToFormValues(client))
     setFormError(null)
@@ -49,7 +55,7 @@ export function ClientDetailPage() {
     if (!id) return
     setFormError(null)
     try {
-      await updateClient.mutateAsync({ id, dto: toUpdateClientDto(form) })
+      await updateClient.mutateAsync({ id, dto: toClientWriteDto(form) })
       setIsEditing(false)
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : t('clients.detail.saveError'))

@@ -10,7 +10,7 @@ import { useAuth } from '../auth/AuthContext'
 import { useAllUsers } from '../users/hooks'
 import { ClientForm } from './components/ClientForm'
 import { ClientTable } from './components/ClientTable'
-import { emptyClientForm, toCreateClientDto, type ClientFormValues } from './clientForm'
+import { emptyClientForm, toClientWriteDto, type ClientFormValues } from './clientForm'
 import { exportAllClients, useClients, useCreateClient } from './hooks'
 
 export function ClientsPage() {
@@ -34,7 +34,7 @@ export function ClientsPage() {
     event.preventDefault()
     setFormError(null)
     try {
-      await createClient.mutateAsync(toCreateClientDto(form))
+      await createClient.mutateAsync(toClientWriteDto(form))
       setForm(emptyClientForm)
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : t('clients.createError'))

@@ -1,4 +1,4 @@
-import type { Client, CreateClientDto, UpdateClientDto } from './api'
+import type { Client, CreateClientDto } from './api'
 
 export interface ClientFormValues {
   firstName: string
@@ -40,35 +40,35 @@ export function clientToFormValues(client: Client): ClientFormValues {
   }
 }
 
-/** ClientsPage (створення): порожні необов'язкові поля йдуть як
- * undefined, а не порожній рядок — так само, як раніше вручну робив
- * деструктуризований handleSubmit. */
-export function toCreateClientDto(values: ClientFormValues): CreateClientDto {
-  return {
-    firstName: values.firstName,
-    lastName: values.lastName,
-    phone: values.phone,
-    email: values.email || undefined,
-    salonName: values.salonName || undefined,
-    position: values.position || undefined,
-    address: values.address || undefined,
-    notes: values.notes || undefined,
-    assignedToId: values.assignedToId || undefined,
-  }
+function emptyToUndefined(value: string): string | undefined {
+  return value.trim() === '' ? undefined : value
 }
 
-/** ClientDetailPage (редагування): PATCH надсилає всі поля як є —
- * порожній рядок тут означає "очистити поле", а не "не міняти". */
-export function toUpdateClientDto(values: ClientFormValues): UpdateClientDto {
+/**
+ * Один DTO і для POST (ClientsPage), і для PATCH (ClientDetailPage) —
+ * раніше це були дві окремі функції, і порожній рядок означав у них
+ * РІЗНІ речі: на створенні "не вказано" (undefined, бекенд підставить
+ * дефолт — я/нічого), на редагуванні "очисти поле" (порожній рядок іде
+ * як є). Найпідступніше було з assignedToId: перший пункт у списку
+ * менеджера підписаний "Я (ім'я)" з value="" — на створенні це справді
+ * означало "признач мені", а на збереженні редагування те саме "" бекенд
+ * розумів як "зніми призначення" (assignedToId: null), а не "признач
+ * мені". Тепер порожнє необов'язкове поле в ОБОХ формах означає
+ * однаково: "не надсилати це поле" — PATCH тоді лишає його без змін,
+ * так само як POST підставляє дефолт. `UpdateClientDto` — це
+ * `Partial<CreateClientDto>`, тож повний CreateClientDto без проблем
+ * підходить туди, де очікується частковий.
+ */
+export function toClientWriteDto(values: ClientFormValues): CreateClientDto {
   return {
-    firstName: values.firstName,
-    lastName: values.lastName,
-    phone: values.phone,
-    email: values.email,
-    salonName: values.salonName,
-    position: values.position,
-    address: values.address,
-    notes: values.notes,
-    assignedToId: values.assignedToId,
+    firstName: values.firstName.trim(),
+    lastName: values.lastName.trim(),
+    phone: values.phone.trim(),
+    email: emptyToUndefined(values.email),
+    salonName: emptyToUndefined(values.salonName),
+    position: emptyToUndefined(values.position),
+    address: emptyToUndefined(values.address),
+    notes: emptyToUndefined(values.notes),
+    assignedToId: emptyToUndefined(values.assignedToId),
   }
 }
