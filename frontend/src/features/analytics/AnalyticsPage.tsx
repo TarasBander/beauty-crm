@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Card } from '../../shared/components/Card'
+import { Page } from '../../shared/components/Page'
 import { useAnalyticsDashboard } from './hooks'
 
 export function AnalyticsPage() {
@@ -22,21 +24,19 @@ export function AnalyticsPage() {
 
   if (isPending) {
     return (
-      <div className="users-page">
-        <h1>{t('analytics.title')}</h1>
+      <Page title={t('analytics.title')}>
         <p>{t('analytics.loading')}</p>
-      </div>
+      </Page>
     )
   }
 
   if (isError || !data) {
     return (
-      <div className="users-page">
-        <h1>{t('analytics.title')}</h1>
+      <Page title={t('analytics.title')}>
         <p className="form-error">
           {error instanceof ApiError ? error.message : t('analytics.loadError')}
         </p>
-      </div>
+      </Page>
     )
   }
 
@@ -44,9 +44,7 @@ export function AnalyticsPage() {
   const maxMonthAmount = Math.max(1, ...data.revenueByMonth.map((m) => m.amount))
 
   return (
-    <div className="users-page">
-      <h1>{t('analytics.title')}</h1>
-
+    <Page title={t('analytics.title')}>
       <div className="analytics-kpis">
         <div className="analytics-kpi">
           <span className="detail-label">{t('analytics.kpi.clients')}</span>
@@ -80,8 +78,7 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      <section className="card">
-        <h2>{t('analytics.byStage')}</h2>
+      <Card title={t('analytics.byStage')}>
         <div className="analytics-bars">
           {data.deals.byStage.map((s) => (
             <div key={s.stage} className="analytics-bar-row">
@@ -98,10 +95,9 @@ export function AnalyticsPage() {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
 
-      <section className="card">
-        <h2>{t('analytics.revenueByMonth')}</h2>
+      <Card title={t('analytics.revenueByMonth')}>
         <div className="analytics-columns">
           {data.revenueByMonth.map((m) => (
             <div key={m.month} className="analytics-column">
@@ -116,10 +112,9 @@ export function AnalyticsPage() {
             </div>
           ))}
         </div>
-      </section>
+      </Card>
 
-      <section className="card">
-        <h2>{t('analytics.topClients')}</h2>
+      <Card title={t('analytics.topClients')}>
         {data.topClients.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.topClients.length > 0 && (
           <div className="table-scroll">
@@ -143,10 +138,9 @@ export function AnalyticsPage() {
           </table>
           </div>
         )}
-      </section>
+      </Card>
 
-      <section className="card">
-        <h2>{t('analytics.managerPerformance')}</h2>
+      <Card title={t('analytics.managerPerformance')}>
         {data.managerPerformance.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.managerPerformance.length > 0 && (
           <div className="table-scroll">
@@ -170,7 +164,7 @@ export function AnalyticsPage() {
           </table>
           </div>
         )}
-      </section>
-    </div>
+      </Card>
+    </Page>
   )
 }

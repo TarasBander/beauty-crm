@@ -1,25 +1,21 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
+import { Card } from '../../shared/components/Card'
+import { Page } from '../../shared/components/Page'
+import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { useAuth } from '../auth/AuthContext'
 import { useAllDeals } from '../deals/hooks'
-import type { Payment, PaymentMethod } from './api'
+import { PaymentForm } from './components/PaymentForm'
+import { PaymentTable } from './components/PaymentTable'
+import { emptyPaymentForm, toCreatePaymentDto, type PaymentFormValues } from './paymentForm'
+import type { Payment } from './api'
 import { exportAllPayments, useAllPayments, useCreatePayment, useUpdatePayment } from './hooks'
-
-const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'card', 'bank_transfer']
 
 // A stable reference for the "no data yet" fallback — see TasksPage's
 // EMPTY_TASKS for why this matters for the useMemo below.
 const EMPTY_PAYMENTS: Payment[] = []
-
-const emptyForm = {
-  dealId: '',
-  amount: '',
-  method: 'card' as PaymentMethod,
-  notes: '',
-}
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -37,7 +33,7 @@ export function PaymentsPage() {
   const payments = paymentsQuery.data?.data ?? EMPTY_PAYMENTS
   const deals = dealsQuery.data?.data ?? []
 
-  const [form, setForm] = useState(emptyForm)
+  const [form, setForm] = useState<PaymentFormValues>(emptyPaymentForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
 
@@ -47,25 +43,17 @@ export function PaymentsPage() {
     event.preventDefault()
     setFormError(null)
     try {
-      await createPayment.mutateAsync({
-        dealId: form.dealId,
-        amount: Number(form.amount),
-        method: form.method,
-        notes: form.notes || undefined,
-      })
-      setForm(emptyForm)
+      await createPayment.mutateAsync(toCreatePaymentDto(form))
+      setForm(emptyPaymentForm)
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : t('payments.createError'))
     }
   }
 
-  const markPaid = async (payment: (typeof payments)[number]) => {
+  const markPaid = async (payment: Payment) => {
     setMarkingPaidId(payment.id)
     try {
-      await updatePayment.mutateAsync({
-        id: payment.id,
-        dto: { status: 'paid', paidAt: todayStr() },
-      })
+      await updatePayment.mutateAsync({ id: payment.id, dto: { status: 'paid', paidAt: todayStr() } })
     } catch {
       // the mutation's onError already rolled the optimistic change back
     } finally {
@@ -80,9 +68,7 @@ export function PaymentsPage() {
 
   const totals = useMemo(() => {
     const paid = payments.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0)
-    const pending = payments
-      .filter((p) => p.status === 'pending')
-      .reduce((sum, p) => sum + p.amount, 0)
+    const pending = payments.filter((p) => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0)
     return { paid, pending }
   }, [payments])
 
@@ -108,9 +94,7 @@ export function PaymentsPage() {
   }
 
   return (
-    <div className="users-page">
-      <h1>{t('payments.title')}</h1>
-
+    <Page title={t('payments.title')}>
       <div className="payments-summary">
         <div className="payments-summary-item payments-summary-paid">
           <span className="detail-label">{t('payments.summary.paid')}</span>
@@ -122,140 +106,45 @@ export function PaymentsPage() {
         </div>
       </div>
 
-      <section className="card">
-        <h2>{t('payments.addTitle')}</h2>
+      <Card title={t('payments.addTitle')}>
         {deals.length === 0 && !paymentsQuery.isPending && (
           <p className="subtitle">{t('payments.noDealsHint')}</p>
         )}
-        <form className="user-form" onSubmit={handleSubmit}>
-          <label>
-            {t('payments.field.deal')}
-            <select
-              value={form.dealId}
-              onChange={(e) => setForm({ ...form, dealId: e.target.value })}
-              required
-            >
-              <option value="" disabled>
-                {t('payments.field.selectDeal')}
-              </option>
-              {deals.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title} — {d.client.firstName} {d.client.lastName}
-                </option>
-              ))}
-            </select>
-          </label>
+        <PaymentForm
+          values={form}
+          onChange={setForm}
+          deals={deals}
+          onSubmit={handleSubmit}
+          isSubmitting={createPayment.isPending}
+          error={formError}
+        />
+      </Card>
 
-          <div className="form-row">
-            <label>
-              {t('payments.field.amount')}
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                required
-              />
-            </label>
-            <label>
-              {t('payments.field.method')}
-              <select
-                value={form.method}
-                onChange={(e) => setForm({ ...form, method: e.target.value as PaymentMethod })}
-              >
-                {PAYMENT_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {t(`payments.method.${m}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <label>
-            {t('payments.field.notes')}
-            <textarea
-              rows={2}
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              maxLength={2000}
-            />
-          </label>
-
-          {formError && <p className="form-error">{formError}</p>}
-
-          <button type="submit" disabled={createPayment.isPending || deals.length === 0}>
-            {createPayment.isPending ? t('payments.submitting') : t('payments.submit')}
-          </button>
-        </form>
-      </section>
-
-      <section className="card">
-        <div className="task-filter-row">
-          <h2>{t('payments.listTitle')}</h2>
-          {payments.length > 0 && (
+      <Card
+        title={t('payments.listTitle')}
+        actions={
+          payments.length > 0 && (
             <button type="button" onClick={exportPayments} disabled={isExporting}>
               {t('common.exportCsv')}
             </button>
-          )}
-        </div>
-        {paymentsQuery.isPending && <p>{t('payments.loading')}</p>}
-        {paymentsQuery.isError && (
-          <p className="form-error">
-            {paymentsQuery.error instanceof ApiError ? paymentsQuery.error.message : t('payments.loadError')}
-          </p>
-        )}
-        {paymentsQuery.isSuccess && payments.length === 0 && (
-          <p className="subtitle">{t('payments.empty')}</p>
-        )}
-        {paymentsQuery.isSuccess && payments.length > 0 && (
-          <div className="table-scroll">
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th>{t('payments.columns.deal')}</th>
-                <th>{t('payments.columns.amount')}</th>
-                <th>{t('payments.columns.method')}</th>
-                <th>{t('payments.columns.status')}</th>
-                <th>{t('payments.columns.paidAt')}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <Link to={`/clients/${p.deal.client.id}`} className="text-link">
-                      {p.deal.title}
-                    </Link>
-                  </td>
-                  <td>{formatAmount(p.amount)}</td>
-                  <td>{t(`payments.method.${p.method}`)}</td>
-                  <td>
-                    <span className={`payment-status-badge payment-status-${p.status}`}>
-                      {t(`payments.status.${p.status}`)}
-                    </span>
-                  </td>
-                  <td>{p.paidAt ?? '—'}</td>
-                  <td>
-                    {p.status === 'pending' && (
-                      <button
-                        type="button"
-                        onClick={() => markPaid(p)}
-                        disabled={markingPaidId === p.id}
-                      >
-                        {t('payments.markPaid')}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-        )}
-      </section>
-    </div>
+          )
+        }
+      >
+        <QueryStatus
+          query={paymentsQuery}
+          loadingText={t('payments.loading')}
+          errorFallback={t('payments.loadError')}
+          isEmpty={payments.length === 0}
+          emptyText={t('payments.empty')}
+        >
+          <PaymentTable
+            payments={payments}
+            formatAmount={formatAmount}
+            markingPaidId={markingPaidId}
+            onMarkPaid={markPaid}
+          />
+        </QueryStatus>
+      </Card>
+    </Page>
   )
 }

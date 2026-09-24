@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Card } from '../../shared/components/Card'
+import { Page } from '../../shared/components/Page'
 import { useChangePassword } from './hooks'
 
 export function ChangePasswordPage() {
@@ -35,10 +37,8 @@ export function ChangePasswordPage() {
   }
 
   return (
-    <div className="users-page">
-      <h1>{t('auth.changePassword.title')}</h1>
-
-      <section className="card">
+    <Page title={t('auth.changePassword.title')}>
+      <Card>
         <form className="user-form" onSubmit={handleSubmit}>
           <label>
             {t('auth.changePassword.currentPassword')}
@@ -87,7 +87,7 @@ export function ChangePasswordPage() {
               : t('auth.changePassword.submit')}
           </button>
         </form>
-      </section>
-    </div>
+      </Card>
+    </Page>
   )
 }

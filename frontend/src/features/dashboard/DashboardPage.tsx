@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
 import type { Role } from '../../shared/api/types'
+import { Card } from '../../shared/components/Card'
+import { Page } from '../../shared/components/Page'
 import { useAuth } from '../auth/AuthContext'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAllTasks } from '../tasks/hooks'
@@ -124,7 +126,7 @@ export function DashboardPage() {
   const data = dashboardQuery.data
 
   return (
-    <div className="users-page">
+    <Page>
       <div className="dashboard-hero">
         <h1>{t('dashboard.welcome', { name: user?.firstName })}</h1>
         <p className="subtitle">{t('dashboard.subtitle')}</p>
@@ -166,8 +168,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      <section className="card">
-        <h2>{t('dashboard.quickAccessTitle')}</h2>
+      <Card title={t('dashboard.quickAccessTitle')}>
         <div className="dashboard-tiles">
           {visibleTiles.map((tile) => (
             <Link key={tile.to} to={tile.to} className="dashboard-tile">
@@ -187,16 +188,16 @@ export function DashboardPage() {
             </Link>
           ))}
         </div>
-      </section>
+      </Card>
 
-      <section className="card">
-        <div className="task-filter-row">
-          <h2>{t('dashboard.upcomingTasksTitle')}</h2>
+      <Card
+        title={t('dashboard.upcomingTasksTitle')}
+        actions={
           <Link to="/tasks" className="text-link">
             {t('dashboard.viewAll')}
           </Link>
-        </div>
-
+        }
+      >
         {upcomingTasks.length === 0 && (
           <p className="subtitle">{t('dashboard.noUpcomingTasks')}</p>
         )}
@@ -221,7 +222,7 @@ export function DashboardPage() {
             })}
           </ul>
         )}
-      </section>
-    </div>
+      </Card>
+    </Page>
   )
 }

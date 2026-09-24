@@ -2,24 +2,13 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
+import { Card } from '../../shared/components/Card'
+import { Page } from '../../shared/components/Page'
 import { useAuth } from '../auth/AuthContext'
 import { useAllUsers } from '../users/hooks'
-import type { Client } from './api'
+import { ClientForm } from './components/ClientForm'
+import { clientToFormValues, emptyClientForm, toUpdateClientDto, type ClientFormValues } from './clientForm'
 import { useClient, useUpdateClient } from './hooks'
-
-function toFormState(client: Client) {
-  return {
-    firstName: client.firstName,
-    lastName: client.lastName,
-    phone: client.phone,
-    email: client.email ?? '',
-    salonName: client.salonName ?? '',
-    position: client.position ?? '',
-    address: client.address ?? '',
-    notes: client.notes ?? '',
-    assignedToId: client.assignedTo?.id ?? '',
-  }
-}
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -33,24 +22,24 @@ export function ClientDetailPage() {
   const updateClient = useUpdateClient()
 
   const [isEditing, setIsEditing] = useState(false)
-  const [form, setForm] = useState(emptyFormState)
+  const [form, setForm] = useState<ClientFormValues>(emptyClientForm)
   const [formError, setFormError] = useState<string | null>(null)
 
   // Keep the edit form in sync whenever a freshly loaded/updated client
   // arrives, as long as the user isn't mid-edit (don't clobber unsaved input).
   useEffect(() => {
-    if (client && !isEditing) setForm(toFormState(client))
+    if (client && !isEditing) setForm(clientToFormValues(client))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client])
 
   const startEditing = () => {
-    if (client) setForm(toFormState(client))
+    if (client) setForm(clientToFormValues(client))
     setFormError(null)
     setIsEditing(true)
   }
 
   const cancelEditing = () => {
-    if (client) setForm(toFormState(client))
+    if (client) setForm(clientToFormValues(client))
     setFormError(null)
     setIsEditing(false)
   }
@@ -60,20 +49,7 @@ export function ClientDetailPage() {
     if (!id) return
     setFormError(null)
     try {
-      await updateClient.mutateAsync({
-        id,
-        dto: {
-          firstName: form.firstName,
-          lastName: form.lastName,
-          phone: form.phone,
-          email: form.email,
-          salonName: form.salonName,
-          position: form.position,
-          address: form.address,
-          notes: form.notes,
-          assignedToId: form.assignedToId,
-        },
-      })
+      await updateClient.mutateAsync({ id, dto: toUpdateClientDto(form) })
       setIsEditing(false)
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : t('clients.detail.saveError'))
@@ -92,7 +68,7 @@ export function ClientDetailPage() {
       : null
 
   return (
-    <div className="users-page">
+    <Page>
       <Link to="/clients" className="text-link back-link">
         {t('clients.detail.back')}
       </Link>
@@ -108,7 +84,7 @@ export function ClientDetailPage() {
           </h1>
 
           {!isEditing && (
-            <section className="card">
+            <Card>
               <div className="detail-grid">
                 <div className="detail-item">
                   <span className="detail-label">{t('clients.phone')}</span>
@@ -163,136 +139,28 @@ export function ClientDetailPage() {
               <button type="button" onClick={startEditing}>
                 {t('clients.detail.edit')}
               </button>
-            </section>
+            </Card>
           )}
 
           {isEditing && (
-            <section className="card">
-              <form className="user-form" onSubmit={handleSubmit}>
-                <div className="form-row">
-                  <label>
-                    {t('clients.firstName')}
-                    <input
-                      value={form.firstName}
-                      onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                      required
-                      maxLength={100}
-                    />
-                  </label>
-                  <label>
-                    {t('clients.lastName')}
-                    <input
-                      value={form.lastName}
-                      onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                      required
-                      maxLength={100}
-                    />
-                  </label>
-                </div>
-
-                <div className="form-row">
-                  <label>
-                    {t('clients.phone')}
-                    <input
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      required
-                      maxLength={20}
-                      pattern="^[+]?[0-9\s\-()]{7,20}$"
-                    />
-                  </label>
-                  <label>
-                    {t('clients.email')}
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      maxLength={254}
-                    />
-                  </label>
-                </div>
-
-                <div className="form-row">
-                  <label>
-                    {t('clients.salonName')}
-                    <input
-                      value={form.salonName}
-                      onChange={(e) => setForm({ ...form, salonName: e.target.value })}
-                      maxLength={200}
-                    />
-                  </label>
-                  <label>
-                    {t('clients.position')}
-                    <input
-                      value={form.position}
-                      onChange={(e) => setForm({ ...form, position: e.target.value })}
-                      maxLength={100}
-                    />
-                  </label>
-                </div>
-
-                <label>
-                  {t('clients.address')}
-                  <input
-                    value={form.address}
-                    onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    maxLength={300}
-                  />
-                </label>
-
-                <label>
-                  {t('clients.notes')}
-                  <textarea
-                    rows={3}
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    maxLength={2000}
-                  />
-                </label>
-
-                <label>
-                  {t('clients.assignedTo')}
-                  <select
-                    value={form.assignedToId}
-                    onChange={(e) => setForm({ ...form, assignedToId: e.target.value })}
-                  >
-                    <option value="">{t('clients.assignedToMe', { name: user?.firstName })}</option>
-                    {managers.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.firstName} {m.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                {formError && <p className="form-error">{formError}</p>}
-
-                <div className="form-row">
-                  <button type="submit" disabled={updateClient.isPending}>
-                    {updateClient.isPending ? t('clients.detail.saving') : t('clients.detail.save')}
-                  </button>
-                  <button type="button" onClick={cancelEditing} disabled={updateClient.isPending}>
-                    {t('clients.detail.cancel')}
-                  </button>
-                </div>
-              </form>
-            </section>
+            <Card>
+              <ClientForm
+                values={form}
+                onChange={setForm}
+                managers={managers}
+                currentUserFirstName={user?.firstName}
+                onSubmit={handleSubmit}
+                isSubmitting={updateClient.isPending}
+                submitLabel={t('clients.detail.save')}
+                submittingLabel={t('clients.detail.saving')}
+                error={formError}
+                onCancel={cancelEditing}
+                cancelLabel={t('clients.detail.cancel')}
+              />
+            </Card>
           )}
         </>
       )}
-    </div>
+    </Page>
   )
-}
-
-const emptyFormState = {
-  firstName: '',
-  lastName: '',
-  phone: '',
-  email: '',
-  salonName: '',
-  position: '',
-  address: '',
-  notes: '',
-  assignedToId: '',
 }
