@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, type PaginationParams } from '../../shared/api/http'
-import { useAuth } from '../auth/AuthContext'
+import { useAuthenticatedToken } from '../auth/AuthContext'
 import { userKeys, usersApi, type CreateUserDto } from './api'
 
 // useQuery — одна сторінка користувачів (таблиця на сторінці "Користувачі").
 export function useUsers(params: PaginationParams = {}) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: userKeys.list(params),
-    queryFn: () => usersApi.list(token as string, params),
+    queryFn: () => usersApi.list(token, params),
     enabled: !!token,
     placeholderData: (prev) => prev,
   })
@@ -34,10 +34,10 @@ export function useAllUsers() {
 
 // useMutation — створення користувача, інвалідуємо закешовані списки.
 export function useCreateUser() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateUserDto) => usersApi.create(token as string, dto),
+    mutationFn: (dto: CreateUserDto) => usersApi.create(token, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() })
     },

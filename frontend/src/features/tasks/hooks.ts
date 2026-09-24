@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
-import { useAuth } from '../auth/AuthContext'
+import { useAuthenticatedToken } from '../auth/AuthContext'
 import { taskKeys, tasksApi, type CreateTaskDto, type Task, type UpdateTaskDto } from './api'
 
 // useQuery — одна сторінка задач.
 export function useTasks(params: PaginationParams = {}) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: taskKeys.list(params),
-    queryFn: () => tasksApi.list(token as string, params),
+    queryFn: () => tasksApi.list(token, params),
     enabled: !!token,
     placeholderData: (prev) => prev,
   })
@@ -30,10 +30,10 @@ export function useAllTasks() {
 
 // useMutation — створення задачі, інвалідуємо закешовані списки задач.
 export function useCreateTask() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateTaskDto) => tasksApi.create(token as string, dto),
+    mutationFn: (dto: CreateTaskDto) => tasksApi.create(token, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: taskKeys.lists() })
       // Лічильники вкладок (TaskFilterTabs) і "найближчі задачі" на
@@ -54,11 +54,11 @@ interface TasksListData {
 // useMutation з оптимістичним оновленням для чекбокса "виконано" —
 // той самий патерн onMutate/onError/onSettled, що й у useUpdateDeal.
 export function useUpdateTask() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateTaskDto }) =>
-      tasksApi.update(token as string, id, dto),
+      tasksApi.update(token, id, dto),
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: taskKeys.lists() })
       const previous = queryClient.getQueriesData<TasksListData>({ queryKey: taskKeys.lists() })

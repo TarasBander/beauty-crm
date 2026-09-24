@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { useAuth } from './AuthContext'
+import { useAuthenticatedToken } from './AuthContext'
 import { authApi } from './api'
 
 // useMutation — для дій, які щось МІНЯЮТЬ на бекенді (POST/PATCH/DELETE),
@@ -7,7 +7,7 @@ import { authApi } from './api'
 // саме такий одноразовий "постріл": нічого в кеші React Query не
 // залежить від пароля, тож після успіху не треба нічого інвалідувати.
 export function useChangePassword() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useMutation({
     mutationFn: ({
       currentPassword,
@@ -15,6 +15,6 @@ export function useChangePassword() {
     }: {
       currentPassword: string
       newPassword: string
-    }) => authApi.changePassword(token as string, currentPassword, newPassword),
+    }) => authApi.changePassword(token, currentPassword, newPassword),
   })
 }

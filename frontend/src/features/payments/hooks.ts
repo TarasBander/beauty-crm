@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
-import { useAuth } from '../auth/AuthContext'
+import { useAuthenticatedToken } from '../auth/AuthContext'
 import {
   paymentKeys,
   paymentsApi,
@@ -12,10 +12,10 @@ import {
 
 // useQuery — одна сторінка платежів.
 export function usePayments(params: PaginationParams = {}) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: paymentKeys.list(params),
-    queryFn: () => paymentsApi.list(token as string, params),
+    queryFn: () => paymentsApi.list(token, params),
     enabled: !!token,
     placeholderData: (prev) => prev,
   })
@@ -36,10 +36,10 @@ export function useAllPayments() {
 
 // useMutation — створення платежу, інвалідуємо закешовані списки.
 export function useCreatePayment() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreatePaymentDto) => paymentsApi.create(token as string, dto),
+    mutationFn: (dto: CreatePaymentDto) => paymentsApi.create(token, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.lists() })
       // Смуга "отримано/очікується" читається з /analytics/dashboard —
@@ -57,11 +57,11 @@ interface PaymentsListData {
 // useMutation з оптимістичним оновленням для "позначити оплаченим" —
 // той самий патерн onMutate/onError/onSettled, що й у useUpdateDeal.
 export function useUpdatePayment() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdatePaymentDto }) =>
-      paymentsApi.update(token as string, id, dto),
+      paymentsApi.update(token, id, dto),
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: paymentKeys.lists() })
       const previous = queryClient.getQueriesData<PaymentsListData>({

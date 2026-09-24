@@ -40,7 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // читає useAuth() у будь-якому компоненті застосунку через `user`.
   const meQuery = useQuery({
     queryKey: meQueryKey(token),
-    queryFn: () => authApi.me(token as string),
+    // Тут не можна викликати useAuthenticatedToken() — цей queryFn сам
+    // визначає, чи є валідна сесія, і виконується всередині
+    // AuthProvider, а не під ним, тож useAuth() з нього кинув би
+    // помилку "поза <AuthProvider>". enabled: !!token нижче гарантує,
+    // що запит узагалі не піде, поки token порожній — звужуємо вручну,
+    // без `as`.
+    queryFn: () => {
+      if (!token) {
+        throw new Error('meQuery запущено без токена')
+      }
+      return authApi.me(token)
+    },
     enabled: !!token,
     retry: false,
     staleTime: 5 * 60_000,
@@ -103,4 +114,20 @@ export function useAuth(): AuthContextValue {
     throw new Error('useAuth має використовуватись всередині <AuthProvider>')
   }
   return ctx
+}
+
+/**
+ * Той самий token, що й useAuth().token, але звужений до string замість
+ * string | null — тож queryFn/mutationFn можуть передавати його в API
+ * без `as string`. Кидає, якщо токена нема: викликати лише там, де він
+ * гарантовано є — у хуках з enabled: !!token (запит і так не піде, поки
+ * token порожній) або під <ProtectedRoute> (куди без сесії взагалі не
+ * потрапити).
+ */
+export function useAuthenticatedToken(): string {
+  const { token } = useAuth()
+  if (!token) {
+    throw new Error('useAuthenticatedToken використаний без активної сесії')
+  }
+  return token
 }

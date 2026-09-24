@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
-import { useAuth } from '../auth/AuthContext'
+import { useAuthenticatedToken } from '../auth/AuthContext'
 import { dealKeys, dealsApi, type CreateDealDto, type Deal, type UpdateDealDto } from './api'
 
 // useQuery — одна сторінка угод, кеш-ключ включає параметри пагінації
 // (як і в useClients вище).
 export function useDeals(params: PaginationParams = {}) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: dealKeys.list(params),
-    queryFn: () => dealsApi.list(token as string, params),
+    queryFn: () => dealsApi.list(token, params),
     enabled: !!token,
     placeholderData: (prev) => prev,
   })
@@ -35,10 +35,10 @@ export function useAllDeals() {
 // useMutation — створення угоди, після успіху інвалідуємо всі закешовані
 // списки угод (так само, як useCreateClient).
 export function useCreateDeal() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateDealDto) => dealsApi.create(token as string, dto),
+    mutationFn: (dto: CreateDealDto) => dealsApi.create(token, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: dealKeys.lists() })
       // Кількість/сума по стадіях у канбані (DealBoard) і KPI на
@@ -68,11 +68,11 @@ interface DealsListData {
 //     кеш по-справжньому, щоб отримати гарантовано актуальні дані з
 //     бекенду замість тимчасового "оптимістичного" патчу.
 export function useUpdateDeal() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateDealDto }) =>
-      dealsApi.update(token as string, id, dto),
+      dealsApi.update(token, id, dto),
     onMutate: async ({ id, dto }) => {
       await queryClient.cancelQueries({ queryKey: dealKeys.lists() })
       const previous = queryClient.getQueriesData<DealsListData>({ queryKey: dealKeys.lists() })

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchAllPages, type PaginationParams } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
-import { useAuth } from '../auth/AuthContext'
+import { useAuthenticatedToken } from '../auth/AuthContext'
 import { clientKeys, clientsApi, type CreateClientDto, type UpdateClientDto } from './api'
 
 // useQuery — читає й кешує одну "сторінку" клієнтів. queryKey
@@ -9,10 +9,10 @@ import { clientKeys, clientsApi, type CreateClientDto, type UpdateClientDto } fr
 // сторінка/фільтр кешується окремим записом — перехід назад на вже
 // відкриту сторінку бере дані з кешу миттєво, без нового запиту.
 export function useClients(params: PaginationParams = {}) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: clientKeys.list(params),
-    queryFn: () => clientsApi.list(token as string, params),
+    queryFn: () => clientsApi.list(token, params),
     // Без токена запит не має сенсу (401) — просто не запускаємо його.
     enabled: !!token,
     // Поки вантажиться нова сторінка, показуємо рядки попередньої
@@ -25,10 +25,10 @@ export function useClients(params: PaginationParams = {}) {
 // кеш-запис на кожен id. enabled чекає і на токен, і на сам id (бо на
 // перших рендерах id з useParams() ще може бути undefined).
 export function useClient(id: string | undefined) {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   return useQuery({
     queryKey: clientKeys.detail(id ?? ''),
-    queryFn: () => clientsApi.get(token as string, id as string),
+    queryFn: () => clientsApi.get(token, id as string),
     enabled: !!token && !!id,
   })
 }
@@ -37,10 +37,10 @@ export function useClient(id: string | undefined) {
 // позначає всі закешовані списки клієнтів застарілими, тож React Query
 // сам підвантажить свіжі дані для будь-якого відкритого списку/сторінки.
 export function useCreateClient() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (dto: CreateClientDto) => clientsApi.create(token as string, dto),
+    mutationFn: (dto: CreateClientDto) => clientsApi.create(token, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() })
       // "Клієнтів усього" на дашборді читається з /analytics/dashboard —
@@ -55,11 +55,11 @@ export function useCreateClient() {
 // кеш картки клієнта (setQueryData) свіжими даними з відповіді сервера
 // — це швидше за очікування нового запиту і прибирає "стрибок" даних.
 export function useUpdateClient() {
-  const { token } = useAuth()
+  const token = useAuthenticatedToken()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: UpdateClientDto }) =>
-      clientsApi.update(token as string, id, dto),
+      clientsApi.update(token, id, dto),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: clientKeys.lists() })
       queryClient.setQueryData(clientKeys.detail(updated.id), updated)

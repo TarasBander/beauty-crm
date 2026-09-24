@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
+import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { Pagination } from '../../shared/components/Pagination'
@@ -25,6 +26,7 @@ export function ClientsPage() {
   const [form, setForm] = useState<ClientFormValues>(emptyClientForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [exportWarning, setExportWarning] = useState<string | null>(null)
 
   const clients = clientsQuery.data?.data ?? []
   const meta = clientsQuery.data?.meta
@@ -44,11 +46,12 @@ export function ClientsPage() {
   const exportClients = async () => {
     if (!token) return
     setIsExporting(true)
+    setExportWarning(null)
     try {
-      const all = await exportAllClients(token)
+      const { rows, truncated, total } = await exportAllClients(token)
       downloadCsv(
         'clients.csv',
-        all.map((c) => ({
+        rows.map((c) => ({
           firstName: c.firstName,
           lastName: c.lastName,
           phone: c.phone,
@@ -59,6 +62,9 @@ export function ClientsPage() {
           assignedTo: c.assignedTo ? `${c.assignedTo.firstName} ${c.assignedTo.lastName}` : '',
         })),
       )
+      if (truncated) {
+        setExportWarning(t('common.exportTruncated', { count: rows.length, total }))
+      }
     } finally {
       setIsExporting(false)
     }
@@ -90,6 +96,7 @@ export function ClientsPage() {
           )
         }
       >
+        {exportWarning && <Banner>{exportWarning}</Banner>}
         <QueryStatus
           query={clientsQuery}
           loadingText={t('clients.loading')}
