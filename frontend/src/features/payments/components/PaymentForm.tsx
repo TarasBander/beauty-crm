@@ -22,7 +22,7 @@ export function PaymentForm({ values, onChange, deals, onSubmit, isSubmitting, e
     onChange({ ...values, [key]: value })
 
   return (
-    <form className="user-form" onSubmit={onSubmit}>
+    <form className="crm-form" onSubmit={onSubmit}>
       <label>
         {t('payments.field.deal')}
         <select value={values.dealId} onChange={(e) => set('dealId', e.target.value)} required>

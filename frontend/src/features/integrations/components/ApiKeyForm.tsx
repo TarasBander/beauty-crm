@@ -13,7 +13,7 @@ export function ApiKeyForm({ name, onNameChange, onSubmit, isSubmitting, error }
   const { t } = useTranslation()
 
   return (
-    <form className="user-form" onSubmit={onSubmit}>
+    <form className="crm-form" onSubmit={onSubmit}>
       <label>
         {t('integrations.field.name')}
         <input

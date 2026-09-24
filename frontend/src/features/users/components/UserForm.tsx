@@ -23,7 +23,7 @@ export function UserForm({ values, onChange, canAssignAdmin, onSubmit, isSubmitt
     onChange({ ...values, [key]: value })
 
   return (
-    <form className="user-form" onSubmit={onSubmit}>
+    <form className="crm-form" onSubmit={onSubmit}>
       <div className="form-row">
         <label>
           {t('users.firstName')}

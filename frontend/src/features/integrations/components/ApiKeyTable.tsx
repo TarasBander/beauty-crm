@@ -13,7 +13,7 @@ export function ApiKeyTable({ apiKeys, formatDate, revokingId, onRevoke }: ApiKe
 
   return (
     <div className="table-scroll">
-      <table className="users-table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>{t('integrations.columns.name')}</th>
@@ -33,7 +33,7 @@ export function ApiKeyTable({ apiKeys, formatDate, revokingId, onRevoke }: ApiKe
               </td>
               <td>
                 <span
-                  className={`payment-status-badge ${k.revoked ? 'payment-status-cancelled' : 'payment-status-paid'}`}
+                  className={`status-badge ${k.revoked ? 'status-badge--cancelled' : 'status-badge--paid'}`}
                 >
                   {k.revoked ? t('integrations.status.revoked') : t('integrations.status.active')}
                 </span>

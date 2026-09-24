@@ -5,6 +5,8 @@ import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
+import { todayLocalISO } from '../../shared/utils/date'
+import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
 import { useAllDeals } from '../deals/hooks'
 import { PaymentForm } from './components/PaymentForm'
@@ -16,10 +18,6 @@ import { exportAllPayments, useAllPayments, useCreatePayment, useUpdatePayment }
 // A stable reference for the "no data yet" fallback — see TasksPage's
 // EMPTY_TASKS for why this matters for the useMemo below.
 const EMPTY_PAYMENTS: Payment[] = []
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export function PaymentsPage() {
   const { token } = useAuth()
@@ -53,7 +51,7 @@ export function PaymentsPage() {
   const markPaid = async (payment: Payment) => {
     setMarkingPaidId(payment.id)
     try {
-      await updatePayment.mutateAsync({ id: payment.id, dto: { status: 'paid', paidAt: todayStr() } })
+      await updatePayment.mutateAsync({ id: payment.id, dto: { status: 'paid', paidAt: todayLocalISO() } })
     } catch {
       // the mutation's onError already rolled the optimistic change back
     } finally {
@@ -61,10 +59,7 @@ export function PaymentsPage() {
     }
   }
 
-  const formatAmount = (amount: number) =>
-    amount.toLocaleString(i18n.language === 'uk' ? 'uk-UA' : 'en-US', {
-      maximumFractionDigits: 2,
-    }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
+  const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 
   const totals = useMemo(() => {
     const paid = payments.filter((p) => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0)

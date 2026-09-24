@@ -5,6 +5,7 @@ import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
+import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
 import { useAllClients } from '../clients/hooks'
 import { useAllUsers } from '../users/hooks'
@@ -64,10 +65,7 @@ export function DealsPage() {
     }
   }
 
-  const formatAmount = (amount: number) =>
-    amount.toLocaleString(i18n.language === 'uk' ? 'uk-UA' : 'en-US', {
-      maximumFractionDigits: 2,
-    }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
+  const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 
   const exportDeals = async () => {
     if (!token) return

@@ -14,7 +14,7 @@ export function PaymentTable({ payments, formatAmount, markingPaidId, onMarkPaid
 
   return (
     <div className="table-scroll">
-      <table className="users-table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>{t('payments.columns.deal')}</th>
@@ -36,7 +36,7 @@ export function PaymentTable({ payments, formatAmount, markingPaidId, onMarkPaid
               <td>{formatAmount(p.amount)}</td>
               <td>{t(`payments.method.${p.method}`)}</td>
               <td>
-                <span className={`payment-status-badge payment-status-${p.status}`}>
+                <span className={`status-badge status-badge--${p.status}`}>
                   {t(`payments.status.${p.status}`)}
                 </span>
               </td>

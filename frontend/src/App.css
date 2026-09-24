@@ -126,7 +126,7 @@ code {
 }
 
 .auth-card label,
-.user-form label {
+.crm-form label {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -140,9 +140,9 @@ code {
 }
 
 .auth-card input,
-.user-form input,
-.user-form select,
-.user-form textarea {
+.crm-form input,
+.crm-form select,
+.crm-form textarea {
   width: 100%;
   max-width: 100%;
   padding: 0.6rem 0.7rem;
@@ -154,7 +154,7 @@ code {
 }
 
 .auth-card button,
-.user-form button {
+.crm-form button {
   margin-top: 0.5rem;
   padding: 0.7rem;
   border: none;
@@ -166,7 +166,7 @@ code {
 }
 
 .auth-card button:disabled,
-.user-form button:disabled {
+.crm-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -341,32 +341,32 @@ code {
   min-width: 0;
 }
 
-.user-form {
+.crm-form {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   max-width: 480px;
 }
 
-.users-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.users-table th,
-.users-table td {
+.data-table th,
+.data-table td {
   text-align: left;
   padding: 0.6rem 0.5rem;
   border-bottom: 1px solid var(--color-border-light);
   font-size: 0.9rem;
 }
 
-.users-table th {
+.data-table th {
   color: var(--color-text-muted);
   font-weight: 600;
 }
 
-.users-table code {
+.data-table code {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
   padding: 0.1rem 0.4rem;
@@ -639,23 +639,23 @@ code {
   color: var(--color-primary);
 }
 
-.payment-status-badge {
+.status-badge {
   padding: 0.15rem 0.6rem;
   border-radius: 999px;
   font-size: 0.8rem;
 }
 
-.payment-status-pending {
+.status-badge--pending {
   background: var(--color-primary-light);
   color: var(--color-primary);
 }
 
-.payment-status-paid {
+.status-badge--paid {
   background: var(--color-success-bg);
   color: var(--color-success);
 }
 
-.payment-status-cancelled {
+.status-badge--cancelled {
   background: var(--color-border-light);
   color: var(--color-text-muted);
 }
@@ -939,7 +939,7 @@ code {
   -webkit-overflow-scrolling: touch;
 }
 
-.table-scroll .users-table {
+.table-scroll .data-table {
   min-width: 560px;
 }
 
@@ -1037,7 +1037,7 @@ code {
     gap: 0.85rem;
   }
 
-  .user-form {
+  .crm-form {
     max-width: none;
   }
 

@@ -5,6 +5,7 @@ import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
+import { todayLocalISO } from '../../shared/utils/date'
 import { useAuth } from '../auth/AuthContext'
 import { useAllClients } from '../clients/hooks'
 import { useAllDeals } from '../deals/hooks'
@@ -21,10 +22,6 @@ import { exportAllTasks, useAllTasks, useCreateTask, useUpdateTask } from './hoo
 // otherwise create a brand-new array every render, which the useMemo
 // below would then see as "changed" on every single render.
 const EMPTY_TASKS: Task[] = []
-
-function todayStr() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export function TasksPage() {
   const { token, user } = useAuth()
@@ -72,7 +69,7 @@ export function TasksPage() {
     }
   }
 
-  const today = todayStr()
+  const today = todayLocalISO()
 
   const visibleTasks = useMemo(() => filterAndSortTasks(tasks, filter), [tasks, filter])
 

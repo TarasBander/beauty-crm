@@ -14,7 +14,7 @@ export function TaskTable({ tasks, today, togglingTaskId, onToggleDone }: TaskTa
 
   return (
     <div className="table-scroll">
-      <table className="users-table">
+      <table className="data-table">
         <thead>
           <tr>
             <th></th>

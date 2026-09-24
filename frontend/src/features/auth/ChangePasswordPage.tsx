@@ -39,7 +39,7 @@ export function ChangePasswordPage() {
   return (
     <Page title={t('auth.changePassword.title')}>
       <Card>
-        <form className="user-form" onSubmit={handleSubmit}>
+        <form className="crm-form" onSubmit={handleSubmit}>
           <label>
             {t('auth.changePassword.currentPassword')}
             <input

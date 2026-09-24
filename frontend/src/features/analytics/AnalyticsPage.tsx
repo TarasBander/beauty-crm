@@ -2,16 +2,14 @@ import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../shared/api/http'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
+import { formatMoney } from '../../shared/utils/money'
 import { useAnalyticsDashboard } from './hooks'
 
 export function AnalyticsPage() {
   const { t, i18n } = useTranslation()
   const { data, isPending, isError, error } = useAnalyticsDashboard()
 
-  const formatAmount = (amount: number) =>
-    amount.toLocaleString(i18n.language === 'uk' ? 'uk-UA' : 'en-US', {
-      maximumFractionDigits: 0,
-    }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
+  const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 
   const formatMonth = (month: string) => {
     const [year, m] = month.split('-').map(Number)
@@ -118,7 +116,7 @@ export function AnalyticsPage() {
         {data.topClients.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.topClients.length > 0 && (
           <div className="table-scroll">
-          <table className="users-table">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>{t('analytics.columns.client')}</th>
@@ -144,7 +142,7 @@ export function AnalyticsPage() {
         {data.managerPerformance.length === 0 && <p className="subtitle">{t('analytics.noData')}</p>}
         {data.managerPerformance.length > 0 && (
           <div className="table-scroll">
-          <table className="users-table">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>{t('analytics.columns.manager')}</th>

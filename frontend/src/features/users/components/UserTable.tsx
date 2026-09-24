@@ -10,7 +10,7 @@ export function UserTable({ users }: UserTableProps) {
 
   return (
     <div className="table-scroll">
-      <table className="users-table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>{t('users.columns.name')}</th>

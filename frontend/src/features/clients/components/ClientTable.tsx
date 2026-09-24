@@ -11,7 +11,7 @@ export function ClientTable({ clients }: ClientTableProps) {
 
   return (
     <div className="table-scroll">
-      <table className="users-table">
+      <table className="data-table">
         <thead>
           <tr>
             <th>{t('clients.columns.name')}</th>

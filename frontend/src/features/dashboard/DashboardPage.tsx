@@ -5,6 +5,8 @@ import { ApiError } from '../../shared/api/http'
 import type { Role } from '../../shared/api/types'
 import { Card } from '../../shared/components/Card'
 import { Page } from '../../shared/components/Page'
+import { todayLocalISO } from '../../shared/utils/date'
+import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAllTasks } from '../tasks/hooks'
@@ -117,12 +119,9 @@ export function DashboardPage() {
       .slice(0, 5)
   }, [tasksQuery.data])
 
-  const formatAmount = (amount: number) =>
-    amount.toLocaleString(i18n.language === 'uk' ? 'uk-UA' : 'en-US', {
-      maximumFractionDigits: 0,
-    }) + (i18n.language === 'uk' ? ' грн' : ' UAH')
+  const formatAmount = (amount: number) => formatMoney(amount, i18n.language)
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayLocalISO()
   const data = dashboardQuery.data
 
   return (

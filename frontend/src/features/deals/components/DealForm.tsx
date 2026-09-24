@@ -33,7 +33,7 @@ export function DealForm({
     onChange({ ...values, [key]: value })
 
   return (
-    <form className="user-form" onSubmit={onSubmit}>
+    <form className="crm-form" onSubmit={onSubmit}>
       <label>
         {t('deals.field.title')}
         <input value={values.title} onChange={(e) => set('title', e.target.value)} required maxLength={200} />
