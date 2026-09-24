@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
@@ -15,7 +15,10 @@ const NAV_ITEMS: { to: string; end?: boolean; labelKey: string }[] = [
   { to: '/integrations', labelKey: 'nav.integrations' },
 ]
 
-export function Layout({ children }: { children: ReactNode }) {
+// Rendered once by the layout route in App.tsx (wrapped in
+// ProtectedRoute), with every protected page as its <Outlet /> — the
+// nav/header chrome you see here is built exactly once, not per page.
+export function Layout() {
   const { user, logout } = useAuth()
   const { t } = useTranslation()
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
@@ -99,7 +102,9 @@ export function Layout({ children }: { children: ReactNode }) {
           )}
         </div>
       </header>
-      <main className="content">{children}</main>
+      <main className="content">
+        <Outlet />
+      </main>
     </div>
   )
 }

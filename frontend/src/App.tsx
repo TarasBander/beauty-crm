@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import { Layout } from './shared/components/Layout'
+import { NotFoundPage } from './shared/components/NotFoundPage'
 import { ProtectedRoute } from './shared/components/ProtectedRoute'
 import { AuthProvider } from './features/auth/AuthContext'
 
@@ -48,107 +49,35 @@ function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Layout route: everything nested under here requires login
+              (ProtectedRoute) and gets the nav/header chrome (Layout,
+              which renders the matched child via <Outlet />) exactly
+              once — adding a new protected page is one <Route> line
+              below, nothing to remember to wrap. */}
           <Route
-            path="/"
             element={
               <ProtectedRoute>
-                <Layout>
-                  <DashboardPage />
-                </Layout>
+                <Layout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/clients"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ClientsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/clients/:id"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ClientDetailPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/deals"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <DealsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <TasksPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payments"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <PaymentsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <AnalyticsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <UsersPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/integrations"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <IntegrationsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/change-password"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ChangePasswordPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          >
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/clients" element={<ClientsPage />} />
+            <Route path="/clients/:id" element={<ClientDetailPage />} />
+            <Route path="/deals" element={<DealsPage />} />
+            <Route path="/tasks" element={<TasksPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/integrations" element={<IntegrationsPage />} />
+            <Route path="/change-password" element={<ChangePasswordPage />} />
+          </Route>
+
+          {/* Any unmatched URL — logged in or not — lands here directly,
+              instead of bouncing through "/" (which used to then bounce
+              a logged-out visitor to /login a second time). */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </AuthProvider>

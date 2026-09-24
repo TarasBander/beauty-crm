@@ -55,6 +55,31 @@ code {
   color: var(--color-text-muted);
 }
 
+.not-found-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg);
+}
+
+.not-found-card {
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.not-found-card p {
+  margin: 0.5rem 0;
+}
+
+.not-found-code {
+  margin: 0;
+  line-height: 1;
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
 .auth-page {
   min-height: 100vh;
   position: relative;

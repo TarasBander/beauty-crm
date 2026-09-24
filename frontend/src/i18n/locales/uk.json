@@ -26,6 +26,10 @@
       "prev": "Назад",
       "next": "Далі",
       "pageInfo": "Сторінка {{page}} з {{totalPages}} (усього {{total}})"
+    },
+    "notFound": {
+      "title": "Сторінку не знайдено",
+      "backHome": "На головну"
     }
   },
   "auth": {

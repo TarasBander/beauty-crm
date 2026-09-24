@@ -26,6 +26,10 @@
       "prev": "Previous",
       "next": "Next",
       "pageInfo": "Page {{page}} of {{totalPages}} ({{total}} total)"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "backHome": "Back to home"
     }
   },
   "auth": {
