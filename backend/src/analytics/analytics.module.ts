@@ -1,24 +1,21 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
-import { ClientsModule } from '../clients/clients.module.js';
-import { DealsModule } from '../deals/deals.module.js';
-import { PaymentsModule } from '../payments/payments.module.js';
-import { TasksModule } from '../tasks/tasks.module.js';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Client } from '../clients/entities/client.entity.js';
+import { Deal } from '../deals/entities/deal.entity.js';
+import { Payment } from '../payments/entities/payment.entity.js';
+import { Task } from '../tasks/entities/task.entity.js';
 import { AnalyticsController } from './analytics.controller.js';
 import { AnalyticsService } from './analytics.service.js';
 
 @Module({
   // PassportModule.register(...) (not the bare module) so JwtAuthGuard's
   // AuthGuard('jwt') dependencies resolve locally — see UsersModule for
-  // the same gotcha with a longer explanation. The other four modules
-  // are imported purely for their exported services — this module reads
-  // data through them rather than owning any entity of its own.
+  // the same gotcha with a longer explanation. The repositories are used
+  // read-only, for aggregate queries — this module owns no entity.
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    ClientsModule,
-    DealsModule,
-    TasksModule,
-    PaymentsModule,
+    TypeOrmModule.forFeature([Client, Deal, Task, Payment]),
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],

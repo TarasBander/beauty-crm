@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ClientsService } from '../clients/clients.service.js';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Client } from '../clients/entities/client.entity.js';
 import { DealStage, DEAL_STAGE_ORDER } from '../common/enums/deal-stage.enum.js';
 import { PaymentStatus } from '../common/enums/payment-status.enum.js';
 import { TaskStatus } from '../common/enums/task-status.enum.js';
-import { DealsService } from '../deals/deals.service.js';
-import { PaymentsService } from '../payments/payments.service.js';
-import { TasksService } from '../tasks/tasks.service.js';
-
-function monthKey(dateStr: string): string {
-  return dateStr.slice(0, 7); // 'YYYY-MM-DD' -> 'YYYY-MM'
-}
+import { Deal } from '../deals/entities/deal.entity.js';
+import { Payment } from '../payments/entities/payment.entity.js';
+import { Task } from '../tasks/entities/task.entity.js';
 
 function lastNMonthKeys(n: number): string[] {
   const keys: string[] = [];
@@ -25,178 +23,246 @@ function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// node-postgres returns COUNT(...) as a bigint string and SUM(numeric) as
+// a numeric string (or null on an empty set) — normalize both to numbers.
+function num(value: string | number | null | undefined): number {
+  return value === null || value === undefined ? 0 : Number(value);
+}
+
+/**
+ * Every figure here is computed by Postgres (COUNT / SUM / GROUP BY) —
+ * the dashboard used to load all clients, deals, tasks and payments into
+ * memory and filter them in JavaScript, which got slower with every row.
+ * Now the cost is a handful of aggregate queries regardless of data size.
+ */
 @Injectable()
 export class AnalyticsService {
   constructor(
-    private readonly clientsService: ClientsService,
-    private readonly dealsService: DealsService,
-    private readonly tasksService: TasksService,
-    private readonly paymentsService: PaymentsService,
+    @InjectRepository(Client)
+    private readonly clientsRepository: Repository<Client>,
+    @InjectRepository(Deal)
+    private readonly dealsRepository: Repository<Deal>,
+    @InjectRepository(Task)
+    private readonly tasksRepository: Repository<Task>,
+    @InjectRepository(Payment)
+    private readonly paymentsRepository: Repository<Payment>,
   ) {}
 
   async getDashboard() {
-    const [clients, deals, tasks, payments] = await Promise.all([
-      this.clientsService.findAllRaw(),
-      this.dealsService.findAllRaw(),
-      this.tasksService.findAllRaw(),
-      this.paymentsService.findAllRaw(),
+    const months = lastNMonthKeys(6);
+
+    const [
+      clientsTotal,
+      stageRows,
+      taskCounts,
+      upcomingTasks,
+      paymentTotals,
+      byMethodRows,
+      revenueRows,
+      topClientRows,
+      managerRows,
+    ] = await Promise.all([
+      this.clientsRepository.count(),
+      this.dealsByStage(),
+      this.taskCounts(),
+      this.upcomingTasks(),
+      this.paymentTotals(),
+      this.paidByMethod(),
+      this.revenueByMonth(`${months[0]}-01`),
+      this.topClients(),
+      this.managerPerformance(),
     ]);
 
     // --- deals by stage ---
-    const byStage = DEAL_STAGE_ORDER.map((stage) => {
-      const stageDeals = deals.filter((d) => d.stage === stage);
-      return {
-        stage,
-        count: stageDeals.length,
-        amount: stageDeals.reduce((sum, d) => sum + d.amount, 0),
-      };
-    });
-
-    const wonDeals = deals.filter((d) => d.stage === DealStage.WON);
-    const lostDeals = deals.filter((d) => d.stage === DealStage.LOST);
-    const activeDeals = deals.filter(
-      (d) => d.stage !== DealStage.WON && d.stage !== DealStage.LOST,
-    );
-    const wonAmount = wonDeals.reduce((sum, d) => sum + d.amount, 0);
-    const activeAmount = activeDeals.reduce((sum, d) => sum + d.amount, 0);
-    const closedCount = wonDeals.length + lostDeals.length;
-    const conversionRate =
-      closedCount === 0 ? 0 : Math.round((wonDeals.length / closedCount) * 1000) / 10;
-
-    // --- tasks ---
-    const today = todayStr();
-    const overdueCount = tasks.filter(
-      (t) => t.status === TaskStatus.PENDING && !!t.dueDate && t.dueDate < today,
-    ).length;
-    const pendingCount = tasks.filter((t) => t.status === TaskStatus.PENDING).length;
-    const doneCount = tasks.filter((t) => t.status === TaskStatus.DONE).length;
-
-    // Dashboard's "upcoming tasks" widget used to come from the
-    // frontend's useAllTasks() — a capped first-100-tasks fetch,
-    // filtered and sorted to top 5 in the browser. Once there are more
-    // than 100 tasks, the soonest-due one could easily be sitting in row
-    // 101 and never show up. This computes the same top-5 here, from the
-    // full `tasks` array already loaded above for the other aggregates
-    // (not from a second, separately-capped fetch), so it's correct
-    // regardless of how many tasks exist.
-    const upcomingTasks = tasks
-      .filter((t) => t.status === TaskStatus.PENDING)
-      .sort((a, b) => {
-        if (!a.dueDate && !b.dueDate) return 0;
-        if (!a.dueDate) return 1;
-        if (!b.dueDate) return -1;
-        return a.dueDate.localeCompare(b.dueDate);
-      })
-      .slice(0, 5)
-      .map((t) => ({
-        id: t.id,
-        title: t.title,
-        dueDate: t.dueDate,
-        client: t.client ? { id: t.client.id, firstName: t.client.firstName, lastName: t.client.lastName } : null,
-      }));
-
-    // --- payments ---
-    const paidPayments = payments.filter((p) => p.status === PaymentStatus.PAID);
-    const pendingPayments = payments.filter((p) => p.status === PaymentStatus.PENDING);
-    const totalPaid = paidPayments.reduce((sum, p) => sum + p.amount, 0);
-    const totalPending = pendingPayments.reduce((sum, p) => sum + p.amount, 0);
-
-    const byMethodMap = new Map<string, number>();
-    for (const p of paidPayments) {
-      byMethodMap.set(p.method, (byMethodMap.get(p.method) ?? 0) + p.amount);
-    }
-    const byMethod = Array.from(byMethodMap.entries()).map(([method, amount]) => ({
-      method,
-      amount,
+    const stageMap = new Map(stageRows.map((r) => [r.stage, r]));
+    const byStage = DEAL_STAGE_ORDER.map((stage) => ({
+      stage,
+      count: num(stageMap.get(stage)?.count),
+      amount: num(stageMap.get(stage)?.amount),
     }));
 
+    const won = byStage.find((s) => s.stage === DealStage.WON)!;
+    const lost = byStage.find((s) => s.stage === DealStage.LOST)!;
+    const active = byStage.filter(
+      (s) => s.stage !== DealStage.WON && s.stage !== DealStage.LOST,
+    );
+    const totalCount = byStage.reduce((sum, s) => sum + s.count, 0);
+    const activeCount = active.reduce((sum, s) => sum + s.count, 0);
+    const activeAmount = active.reduce((sum, s) => sum + s.amount, 0);
+    const closedCount = won.count + lost.count;
+    const conversionRate =
+      closedCount === 0 ? 0 : Math.round((won.count / closedCount) * 1000) / 10;
+
     // --- revenue by month (last 6 months, paid payments by paidAt) ---
-    const months = lastNMonthKeys(6);
-    const revenueMap = new Map<string, number>(months.map((m) => [m, 0]));
-    for (const p of paidPayments) {
-      if (!p.paidAt) continue;
-      const key = monthKey(p.paidAt);
-      if (revenueMap.has(key)) {
-        revenueMap.set(key, (revenueMap.get(key) ?? 0) + p.amount);
-      }
-    }
-    const revenueByMonth = months.map((month) => ({ month, amount: revenueMap.get(month) ?? 0 }));
-
-    // --- top clients by paid revenue ---
-    const clientRevenue = new Map<
-      string,
-      { firstName: string; lastName: string; salonName: string | null; amount: number }
-    >();
-    for (const p of paidPayments) {
-      const client = p.deal.client;
-      const existing = clientRevenue.get(client.id);
-      if (existing) {
-        existing.amount += p.amount;
-      } else {
-        clientRevenue.set(client.id, {
-          firstName: client.firstName,
-          lastName: client.lastName,
-          salonName: client.salonName,
-          amount: p.amount,
-        });
-      }
-    }
-    const topClients = Array.from(clientRevenue.entries())
-      .map(([clientId, v]) => ({ clientId, ...v }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    // --- manager performance (won deals) ---
-    const managerStats = new Map<
-      string,
-      { firstName: string; lastName: string; dealsWon: number; revenue: number }
-    >();
-    for (const d of wonDeals) {
-      if (!d.assignedTo) continue;
-      const existing = managerStats.get(d.assignedTo.id);
-      if (existing) {
-        existing.dealsWon += 1;
-        existing.revenue += d.amount;
-      } else {
-        managerStats.set(d.assignedTo.id, {
-          firstName: d.assignedTo.firstName,
-          lastName: d.assignedTo.lastName,
-          dealsWon: 1,
-          revenue: d.amount,
-        });
-      }
-    }
-    const managerPerformance = Array.from(managerStats.entries())
-      .map(([managerId, v]) => ({ managerId, ...v }))
-      .sort((a, b) => b.revenue - a.revenue);
+    const revenueMap = new Map(revenueRows.map((r) => [r.month, num(r.amount)]));
+    const revenueByMonth = months.map((month) => ({
+      month,
+      amount: revenueMap.get(month) ?? 0,
+    }));
 
     return {
-      clients: { total: clients.length },
+      clients: { total: clientsTotal },
       deals: {
-        totalCount: deals.length,
+        totalCount,
         byStage,
-        wonAmount,
-        wonCount: wonDeals.length,
-        lostCount: lostDeals.length,
+        wonAmount: won.amount,
+        wonCount: won.count,
+        lostCount: lost.count,
         activeAmount,
-        activeCount: activeDeals.length,
+        activeCount,
         conversionRate,
       },
       tasks: {
-        total: tasks.length,
-        pending: pendingCount,
-        done: doneCount,
-        overdue: overdueCount,
-        upcoming: upcomingTasks,
+        total: num(taskCounts?.total),
+        pending: num(taskCounts?.pending),
+        done: num(taskCounts?.done),
+        overdue: num(taskCounts?.overdue),
+        upcoming: upcomingTasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          dueDate: t.dueDate,
+          client: t.client
+            ? { id: t.client.id, firstName: t.client.firstName, lastName: t.client.lastName }
+            : null,
+        })),
       },
       payments: {
-        totalPaid,
-        totalPending,
-        byMethod,
+        totalPaid: num(paymentTotals?.paid),
+        totalPending: num(paymentTotals?.pending),
+        byMethod: byMethodRows.map((r) => ({ method: r.method, amount: num(r.amount) })),
       },
       revenueByMonth,
-      topClients,
-      managerPerformance,
+      topClients: topClientRows.map((r) => ({
+        clientId: r.clientId,
+        firstName: r.firstName,
+        lastName: r.lastName,
+        salonName: r.salonName,
+        amount: num(r.amount),
+      })),
+      managerPerformance: managerRows.map((r) => ({
+        managerId: r.managerId,
+        firstName: r.firstName,
+        lastName: r.lastName,
+        dealsWon: num(r.dealsWon),
+        revenue: num(r.revenue),
+      })),
     };
+  }
+
+  private dealsByStage() {
+    return this.dealsRepository
+      .createQueryBuilder('d')
+      .select('d.stage', 'stage')
+      .addSelect('COUNT(*)', 'count')
+      .addSelect('COALESCE(SUM(d.amount), 0)', 'amount')
+      .groupBy('d.stage')
+      .getRawMany<{ stage: DealStage; count: string; amount: string }>();
+  }
+
+  private taskCounts() {
+    return this.tasksRepository
+      .createQueryBuilder('t')
+      .select('COUNT(*)', 'total')
+      .addSelect('COUNT(*) FILTER (WHERE t.status = :pending)', 'pending')
+      .addSelect('COUNT(*) FILTER (WHERE t.status = :done)', 'done')
+      .addSelect(
+        'COUNT(*) FILTER (WHERE t.status = :pending AND t.dueDate < :today)',
+        'overdue',
+      )
+      .setParameters({
+        pending: TaskStatus.PENDING,
+        done: TaskStatus.DONE,
+        today: todayStr(),
+      })
+      .getRawOne<{ total: string; pending: string; done: string; overdue: string }>();
+  }
+
+  // Top 5 pending tasks by soonest due date (undated ones last). Served
+  // by the (status, dueDate) index on tasks.
+  private upcomingTasks() {
+    return this.tasksRepository
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.client', 'c')
+      .where('t.status = :pending', { pending: TaskStatus.PENDING })
+      .orderBy('t.dueDate', 'ASC', 'NULLS LAST')
+      .limit(5)
+      .getMany();
+  }
+
+  private paymentTotals() {
+    return this.paymentsRepository
+      .createQueryBuilder('p')
+      .select('COALESCE(SUM(p.amount) FILTER (WHERE p.status = :paid), 0)', 'paid')
+      .addSelect(
+        'COALESCE(SUM(p.amount) FILTER (WHERE p.status = :pending), 0)',
+        'pending',
+      )
+      .setParameters({ paid: PaymentStatus.PAID, pending: PaymentStatus.PENDING })
+      .getRawOne<{ paid: string; pending: string }>();
+  }
+
+  private paidByMethod() {
+    return this.paymentsRepository
+      .createQueryBuilder('p')
+      .select('p.method', 'method')
+      .addSelect('SUM(p.amount)', 'amount')
+      .where('p.status = :paid', { paid: PaymentStatus.PAID })
+      .groupBy('p.method')
+      .getRawMany<{ method: string; amount: string }>();
+  }
+
+  private revenueByMonth(fromDate: string) {
+    return this.paymentsRepository
+      .createQueryBuilder('p')
+      .select(`to_char(p.paidAt, 'YYYY-MM')`, 'month')
+      .addSelect('SUM(p.amount)', 'amount')
+      .where('p.status = :paid', { paid: PaymentStatus.PAID })
+      .andWhere('p.paidAt >= :fromDate', { fromDate })
+      .groupBy('month')
+      .getRawMany<{ month: string; amount: string }>();
+  }
+
+  private topClients() {
+    return this.paymentsRepository
+      .createQueryBuilder('p')
+      .innerJoin('p.deal', 'd')
+      .innerJoin('d.client', 'c')
+      .select('c.id', 'clientId')
+      .addSelect('c.firstName', 'firstName')
+      .addSelect('c.lastName', 'lastName')
+      .addSelect('c.salonName', 'salonName')
+      .addSelect('SUM(p.amount)', 'amount')
+      .where('p.status = :paid', { paid: PaymentStatus.PAID })
+      .groupBy('c.id')
+      .orderBy('amount', 'DESC')
+      .limit(5)
+      .getRawMany<{
+        clientId: string;
+        firstName: string;
+        lastName: string;
+        salonName: string | null;
+        amount: string;
+      }>();
+  }
+
+  private managerPerformance() {
+    return this.dealsRepository
+      .createQueryBuilder('d')
+      .innerJoin('d.assignedTo', 'u')
+      .select('u.id', 'managerId')
+      .addSelect('u.firstName', 'firstName')
+      .addSelect('u.lastName', 'lastName')
+      .addSelect('COUNT(*)', 'dealsWon')
+      .addSelect('SUM(d.amount)', 'revenue')
+      .where('d.stage = :won', { won: DealStage.WON })
+      .groupBy('u.id')
+      .orderBy('revenue', 'DESC')
+      .getRawMany<{
+        managerId: string;
+        firstName: string;
+        lastName: string;
+        dealsWon: string;
+        revenue: string;
+      }>();
   }
 }

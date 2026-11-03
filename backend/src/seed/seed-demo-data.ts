@@ -406,7 +406,7 @@ async function run() {
   // eslint-disable-next-line no-console
   console.log('Готово!');
   // eslint-disable-next-line no-console
-  console.log(`Менеджери: ${managerSeeds.map((m) => m.email).join(', ')} / пароль Manager123!`);
+  console.log(`Менеджери: ${managerSeeds.map((m) => m.email).join(', ')}`);
   // eslint-disable-next-line no-console
   console.log(
     `Створено: ${clients.length} клієнтів, ${deals.length} угод, ${taskSeeds.length} задач, ${paymentSeeds.length} платежів.`,

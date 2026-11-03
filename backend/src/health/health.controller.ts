@@ -15,11 +15,12 @@ export class HealthController {
         database: 'connected',
         timestamp: new Date().toISOString(),
       };
-    } catch (error) {
+    } catch {
+      // No error.message here — this endpoint is public, and driver
+      // errors can leak hostnames, ports and usernames.
       throw new ServiceUnavailableException({
         status: 'error',
         database: 'unreachable',
-        message: error instanceof Error ? error.message : 'unknown error',
       });
     }
   }

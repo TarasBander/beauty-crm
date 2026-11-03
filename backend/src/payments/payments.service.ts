@@ -60,11 +60,6 @@ export class PaymentsService {
     return paginate(this.paymentsRepository, query, { order: { createdAt: 'DESC' } });
   }
 
-  /** Unpaginated — internal use only (AnalyticsService aggregates). */
-  findAllRaw(): Promise<Payment[]> {
-    return this.paymentsRepository.find({ order: { createdAt: 'DESC' } });
-  }
-
   async findById(id: string): Promise<Payment> {
     const payment = await this.paymentsRepository.findOne({ where: { id } });
     if (!payment) {

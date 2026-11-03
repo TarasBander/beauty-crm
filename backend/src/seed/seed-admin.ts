@@ -42,7 +42,7 @@ async function run() {
   });
 
   // eslint-disable-next-line no-console
-  console.log(`Створено адміна: ${email} / ${password}`);
+  console.log(`Створено адміна: ${email}`);
   // eslint-disable-next-line no-console
   console.log('Обов’язково зміни пароль після першого входу.');
 

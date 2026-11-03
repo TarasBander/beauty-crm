@@ -90,13 +90,6 @@ export class ClientsService {
     return paginate(this.clientsRepository, query, { where, order: { createdAt: 'DESC' } });
   }
 
-  /** Unpaginated — for internal callers that need every row, like
-   * AnalyticsService's aggregates. Never expose this straight to a
-   * controller: it doesn't scale past however many clients fit in memory. */
-  findAllRaw(): Promise<Client[]> {
-    return this.clientsRepository.find({ order: { createdAt: 'DESC' } });
-  }
-
   async findById(id: string): Promise<Client> {
     const client = await this.clientsRepository.findOne({ where: { id } });
     if (!client) {

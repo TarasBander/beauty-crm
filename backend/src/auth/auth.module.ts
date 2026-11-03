@@ -5,6 +5,8 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { LoginRateLimitGuard } from './guards/login-rate-limit.guard.js';
+import { getJwtSecret } from './jwt-secret.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 @Module({
@@ -15,7 +17,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET', 'dev-secret-change-me'),
+        secret: getJwtSecret(config),
         signOptions: {
           // cast: @nestjs/jwt types expiresIn as a template-literal union from
           // `ms`, but a plain env-var string ('1d', '3600s', ...) is valid at
@@ -26,7 +28,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, LoginRateLimitGuard],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -77,11 +77,6 @@ export class DealsService {
     return paginate(this.dealsRepository, query, { where, order: { createdAt: 'DESC' } });
   }
 
-  /** Unpaginated — internal use only (AnalyticsService aggregates). */
-  findAllRaw(): Promise<Deal[]> {
-    return this.dealsRepository.find({ order: { createdAt: 'DESC' } });
-  }
-
   async findById(id: string): Promise<Deal> {
     const deal = await this.dealsRepository.findOne({ where: { id } });
     if (!deal) {

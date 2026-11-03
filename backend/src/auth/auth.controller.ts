@@ -6,6 +6,7 @@ import { CurrentUser } from './decorators/current-user.decorator.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
+import { LoginRateLimitGuard } from './guards/login-rate-limit.guard.js';
 import type { AuthenticatedUser } from './jwt-payload.interface.js';
 
 @Controller('auth')
@@ -17,6 +18,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @UseGuards(LoginRateLimitGuard)
   async login(@Body() dto: LoginDto) {
     const user = await this.authService.validateUser(dto.email, dto.password);
     return this.authService.login(user);

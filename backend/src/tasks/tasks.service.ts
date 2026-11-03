@@ -64,12 +64,6 @@ export class TasksService {
     return paginate(this.tasksRepository, query, { order: { createdAt: 'DESC' } });
   }
 
-  /** Unpaginated — internal use only (AnalyticsService aggregates, the
-   * dashboard's upcoming-tasks list). */
-  findAllRaw(): Promise<Task[]> {
-    return this.tasksRepository.find({ order: { createdAt: 'DESC' } });
-  }
-
   async findById(id: string): Promise<Task> {
     const task = await this.tasksRepository.findOne({ where: { id } });
     if (!task) {

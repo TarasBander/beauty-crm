@@ -12,9 +12,9 @@ export const MESSAGES = {
   uk: {
     'auth.invalidCredentials': 'Невірний email або пароль',
     'auth.invalidCurrentPassword': 'Поточний пароль невірний',
+    'auth.tooManyAttempts': 'Забагато спроб входу. Спробуйте пізніше',
     'users.notFound': 'Користувача не знайдено',
     'users.alreadyExists': 'Користувач з таким email вже існує',
-    'users.forbiddenRoleAssign': 'Лише адміністратор може призначити роль адміністратора',
     'clients.notFound': 'Клієнта не знайдено',
     'deals.notFound': 'Угоду не знайдено',
     'tasks.notFound': 'Задачу не знайдено',
@@ -26,9 +26,9 @@ export const MESSAGES = {
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
     'auth.invalidCurrentPassword': 'Current password is incorrect',
+    'auth.tooManyAttempts': 'Too many login attempts. Try again later',
     'users.notFound': 'User not found',
     'users.alreadyExists': 'A user with this email already exists',
-    'users.forbiddenRoleAssign': 'Only an admin can assign the admin role',
     'clients.notFound': 'Client not found',
     'deals.notFound': 'Deal not found',
     'tasks.notFound': 'Task not found',
