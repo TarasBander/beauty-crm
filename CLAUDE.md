@@ -34,6 +34,7 @@ Before saying backend work is done: lint + tsc + `npm test` + `npm run test:e2e`
 - All UI text through i18next, with keys in both `src/i18n/locales/uk.json` and `en.json`, including `aria-label`s.
 - Admin-only routes go through `AdminRoute` and `roles` in `Layout.tsx`, and must match the backend `@Roles`.
 - Keep loading / empty / error states separate (`QueryStatus`).
+- Styling follows the **design-system** skill: teal + peach tokens in `src/index.css`, no hex colors in `App.css` or components, and both light and dark theme must work. After UI changes, run the **ui-check** skill (screenshots in both themes, at 1440 and 390 width).
 
 ## Tests
 

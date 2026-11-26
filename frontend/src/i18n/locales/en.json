@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "Beauty CRM"
+    "name": "Beauty CRM",
+    "tagline": "CRM for beauty salons"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -13,7 +14,9 @@
     "integrations": "Integrations",
     "logout": "Log out",
     "changePassword": "Change password",
-    "menu": "Menu"
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "main": "Main menu"
   },
   "roles": {
     "admin": "Admin",
@@ -37,7 +40,8 @@
     "notFound": {
       "title": "Page not found",
       "backHome": "Back to home"
-    }
+    },
+    "language": "Language"
   },
   "errors": {
     "pageCrashed": "This page crashed. Try another tab."
@@ -49,7 +53,9 @@
       "password": "Password",
       "submit": "Sign in",
       "submitting": "Signing in…",
-      "genericError": "Failed to sign in"
+      "genericError": "Failed to sign in",
+      "heroTitle": "Care for your clients as carefully as for their skin",
+      "heroText": "Salon clients, equipment and cosmetics deals, tasks and payments — all in one place."
     },
     "changePassword": {
       "title": "Change password",
@@ -311,5 +317,9 @@
     },
     "usageTitle": "Usage example",
     "usageHint": "Pass the key in the X-API-Key header. The API is read-only."
+  },
+  "theme": {
+    "switchToDark": "Dark theme",
+    "switchToLight": "Light theme"
   }
 }

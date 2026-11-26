@@ -1,10 +1,12 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
 import type { Role } from '../../shared/api/types'
+import { BeautyIllustration } from '../../shared/components/BeautyIllustration'
 import { Card } from '../../shared/components/Card'
 import { FormError } from '../../shared/components/FormError'
+import { Icon, type IconName } from '../../shared/components/Icon'
 import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { todayLocalISO } from '../../shared/utils/date'
@@ -15,83 +17,19 @@ import { useAnalyticsDashboard } from '../analytics/hooks'
 // roles: як і в Layout.tsx — undefined значить "плитка для всіх", інакше
 // показуємо лише переліченим ролям. Без цього плитка на /users вела б
 // менеджера просто на редірект назад сюди (AdminRoute у App.tsx).
-const TILES: { to: string; navKey: string; descKey: string; icon: ReactNode; roles?: Role[] }[] = [
-  {
-    to: '/clients',
-    navKey: 'nav.clients',
-    descKey: 'dashboard.tile.clients',
-    icon: (
-      <>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-      </>
-    ),
-  },
-  {
-    to: '/deals',
-    navKey: 'nav.deals',
-    descKey: 'dashboard.tile.deals',
-    icon: <path d="M4 5h16l-6 8v6l-4 2v-8z" />,
-  },
-  {
-    to: '/tasks',
-    navKey: 'nav.tasks',
-    descKey: 'dashboard.tile.tasks',
-    icon: (
-      <>
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-        <path d="M8 12l3 3 5-6" />
-      </>
-    ),
-  },
-  {
-    to: '/payments',
-    navKey: 'nav.payments',
-    descKey: 'dashboard.tile.payments',
-    icon: (
-      <>
-        <rect x="3" y="6" width="18" height="12" rx="2" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </>
-    ),
-  },
-  {
-    to: '/analytics',
-    navKey: 'nav.analytics',
-    descKey: 'dashboard.tile.analytics',
-    icon: (
-      <>
-        <line x1="6" y1="20" x2="6" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="18" y1="20" x2="18" y2="14" />
-      </>
-    ),
-  },
-  {
-    to: '/users',
-    navKey: 'nav.users',
-    descKey: 'dashboard.tile.users',
-    roles: ['admin'],
-    icon: (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <circle cx="16.5" cy="9.5" r="2.3" />
-        <path d="M3 20c0-3.5 3-5.5 6-5.5s6 2 6 5.5" />
-        <path d="M14 15c2.6.3 4 1.9 4.3 4.2" />
-      </>
-    ),
-  },
+const TILES: { to: string; navKey: string; descKey: string; icon: IconName; roles?: Role[] }[] = [
+  { to: '/clients', navKey: 'nav.clients', descKey: 'dashboard.tile.clients', icon: 'clients' },
+  { to: '/deals', navKey: 'nav.deals', descKey: 'dashboard.tile.deals', icon: 'deals' },
+  { to: '/tasks', navKey: 'nav.tasks', descKey: 'dashboard.tile.tasks', icon: 'tasks' },
+  { to: '/payments', navKey: 'nav.payments', descKey: 'dashboard.tile.payments', icon: 'payments' },
+  { to: '/analytics', navKey: 'nav.analytics', descKey: 'dashboard.tile.analytics', icon: 'analytics' },
+  { to: '/users', navKey: 'nav.users', descKey: 'dashboard.tile.users', icon: 'users', roles: ['admin'] },
   {
     to: '/integrations',
     navKey: 'nav.integrations',
     descKey: 'dashboard.tile.integrations',
+    icon: 'integrations',
     roles: ['admin'],
-    icon: (
-      <>
-        <path d="M9 3v4M15 3v4M6 7h12v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V7z" />
-        <path d="M12 16v5" />
-      </>
-    ),
   },
 ]
 
@@ -123,8 +61,13 @@ export function DashboardPage() {
   return (
     <Page>
       <div className="dashboard-hero">
-        <h1>{t('dashboard.welcome', { name: user?.firstName })}</h1>
-        <p className="subtitle">{t('dashboard.subtitle')}</p>
+        <div className="dashboard-hero-head">
+          <div>
+            <h1>{t('dashboard.welcome', { name: user?.firstName })}</h1>
+            <p className="subtitle">{t('dashboard.subtitle')}</p>
+          </div>
+          <BeautyIllustration className="dashboard-hero-illustration" />
+        </div>
 
         {dashboardQuery.isPending && <p>{t('common.loading')}</p>}
         {dashboardQuery.isError && (
@@ -167,17 +110,9 @@ export function DashboardPage() {
         <div className="dashboard-tiles">
           {visibleTiles.map((tile) => (
             <Link key={tile.to} to={tile.to} className="dashboard-tile">
-              <svg
-                className="dashboard-tile-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {tile.icon}
-              </svg>
+              <span className="dashboard-tile-icon">
+                <Icon name={tile.icon} />
+              </span>
               <span className="dashboard-tile-title">{t(tile.navKey)}</span>
               <span className="dashboard-tile-desc">{t(tile.descKey)}</span>
             </Link>

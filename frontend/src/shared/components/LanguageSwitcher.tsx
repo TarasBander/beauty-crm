@@ -7,15 +7,16 @@ const LABELS: Record<Language, string> = {
 }
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
 
   return (
-    <div className="lang-switcher" role="group" aria-label="Language">
+    <div className="lang-switcher" role="group" aria-label={t('common.language')}>
       {SUPPORTED_LANGUAGES.map((lang) => (
         <button
           key={lang}
           type="button"
           className={i18n.language === lang ? 'active' : ''}
+          aria-pressed={i18n.language === lang}
           onClick={() => setLanguage(lang)}
         >
           {LABELS[lang]}

@@ -2,8 +2,11 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../../shared/api/http'
+import { BeautyIllustration } from '../../shared/components/BeautyIllustration'
+import { BrandMark } from '../../shared/components/BrandMark'
 import { FormError } from '../../shared/components/FormError'
 import { LanguageSwitcher } from '../../shared/components/LanguageSwitcher'
+import { ThemeToggle } from '../../shared/components/ThemeToggle'
 import { useAuth } from './AuthContext'
 
 // Стан, який ProtectedRoute кладе в location.state перед редіректом на
@@ -47,42 +50,60 @@ export function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-lang-switcher">
-        <LanguageSwitcher />
+      <section className="auth-visual">
+        <div className="auth-visual-brand">
+          <BrandMark />
+          <span>{t('app.name')}</span>
+        </div>
+        <BeautyIllustration className="auth-visual-illustration" />
+        <div className="auth-visual-text">
+          <h2>{t('auth.login.heroTitle')}</h2>
+          <p>{t('auth.login.heroText')}</p>
+        </div>
+      </section>
+
+      <div className="auth-panel">
+        <div className="auth-toolbar">
+          <ThemeToggle />
+          <LanguageSwitcher />
+        </div>
+        <form className="auth-card" onSubmit={handleSubmit}>
+          <div className="auth-card-brand">
+            <BeautyIllustration className="auth-card-illustration" />
+          </div>
+          <h1>{t('app.name')}</h1>
+          <p className="subtitle">{t('auth.login.subtitle')}</p>
+
+          <label>
+            {t('auth.login.email')}
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+              maxLength={254}
+            />
+          </label>
+
+          <label>
+            {t('auth.login.password')}
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              maxLength={72}
+            />
+          </label>
+
+          {error && <FormError>{error}</FormError>}
+
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
+          </button>
+        </form>
       </div>
-      <form className="auth-card" onSubmit={handleSubmit}>
-        <h1>{t('app.name')}</h1>
-        <p className="subtitle">{t('auth.login.subtitle')}</p>
-
-        <label>
-          {t('auth.login.email')}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoFocus
-            maxLength={254}
-          />
-        </label>
-
-        <label>
-          {t('auth.login.password')}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            maxLength={72}
-          />
-        </label>
-
-        {error && <FormError>{error}</FormError>}
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? t('auth.login.submitting') : t('auth.login.submit')}
-        </button>
-      </form>
     </div>
   )
 }
