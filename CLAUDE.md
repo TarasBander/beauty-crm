@@ -9,7 +9,7 @@ Run from the repo root unless noted.
 
 - `npm run db:up` / `npm run db:down`: Postgres in Docker (`crm-postgres`, port 5432)
 - `npm run dev:backend` (http://localhost:3000), `npm run dev:frontend` (http://localhost:5173, proxies `/api` to the backend)
-- Backend (`cd backend`): `npm run lint`, `npx tsc --noEmit -p tsconfig.json`, `npm test`, `npm run test:e2e` (needs the DB up), `npm run seed:admin`, `npm run seed:demo`
+- Backend (`cd backend`): `npm run lint`, `npx tsc --noEmit -p tsconfig.json`, `npm test`, `npm run test:e2e` (needs the DB up), `npm run seed:admin`, `npm run seed:demo`, `npm run seed:history` (sales history 2020→today for the dashboard chart; run after seed:demo)
 - Frontend (`cd frontend`): `npm run lint`, `npm test`, `npm run build` (also typechecks)
 
 Before saying backend work is done: lint + tsc + `npm test` + `npm run test:e2e`.

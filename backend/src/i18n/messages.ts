@@ -22,6 +22,7 @@ export const MESSAGES = {
     'integrations.keyNotFound': 'API-ключ не знайдено',
     'integrations.missingApiKey': "Відсутній заголовок X-API-Key",
     'integrations.invalidApiKey': 'Недійсний або відкликаний API-ключ',
+    'analytics.yearOutOfRange': 'Рік не може бути пізнішим за поточний',
   },
   en: {
     'auth.invalidCredentials': 'Invalid email or password',
@@ -36,6 +37,7 @@ export const MESSAGES = {
     'integrations.keyNotFound': 'API key not found',
     'integrations.missingApiKey': 'Missing X-API-Key header',
     'integrations.invalidApiKey': 'Invalid or revoked API key',
+    'analytics.yearOutOfRange': 'Year cannot be later than the current one',
   },
 } as const satisfies Record<Lang, Record<string, string>>;
 

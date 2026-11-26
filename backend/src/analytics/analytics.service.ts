@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from '../clients/entities/client.entity.js';
@@ -8,6 +8,7 @@ import { TaskStatus } from '../common/enums/task-status.enum.js';
 import { Deal } from '../deals/entities/deal.entity.js';
 import { Payment } from '../payments/entities/payment.entity.js';
 import { Task } from '../tasks/entities/task.entity.js';
+import { SALES_START_YEAR, SalesPeriod, SalesQueryDto } from './dto/sales-query.dto.js';
 
 function lastNMonthKeys(n: number): string[] {
   const keys: string[] = [];
@@ -264,5 +265,65 @@ export class AnalyticsService {
         dealsWon: string;
         revenue: string;
       }>();
+  }
+
+  /**
+   * Продажі для діаграми на дашборді: або 12 місяців одного року, або
+   * по роках від SALES_START_YEAR. revenue — оплачені платежі за датою
+   * оплати; newDeals* — угоди за датою створення.
+   */
+  async getSales(query: SalesQueryDto) {
+    const currentYear = new Date().getFullYear();
+    const years: number[] = [];
+    for (let y = SALES_START_YEAR; y <= currentYear; y++) years.push(y);
+
+    const year = query.year ?? currentYear;
+    if (year > currentYear) {
+      throw new BadRequestException({ messageKey: 'analytics.yearOutOfRange' });
+    }
+
+    const byYear = query.period === SalesPeriod.YEAR;
+    const keys = byYear
+      ? years.map(String)
+      : Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+    const from = byYear ? `${SALES_START_YEAR}-01-01` : `${year}-01-01`;
+    const to = byYear ? `${currentYear + 1}-01-01` : `${year + 1}-01-01`;
+    const bucket = byYear ? 'YYYY' : 'YYYY-MM';
+
+    const [revenueRows, dealRows] = await Promise.all([
+      this.paymentsRepository
+        .createQueryBuilder('p')
+        .select(`to_char(p.paidAt, '${bucket}')`, 'key')
+        .addSelect('SUM(p.amount)', 'amount')
+        .addSelect('COUNT(*)', 'count')
+        .where('p.status = :paid', { paid: PaymentStatus.PAID })
+        .andWhere('p.paidAt >= :from AND p.paidAt < :to', { from, to })
+        .groupBy('key')
+        .getRawMany<{ key: string; amount: string; count: string }>(),
+      this.dealsRepository
+        .createQueryBuilder('d')
+        .select(`to_char(d.createdAt, '${bucket}')`, 'key')
+        .addSelect('COUNT(*)', 'count')
+        .addSelect('COALESCE(SUM(d.amount), 0)', 'amount')
+        .where('d.createdAt >= :from AND d.createdAt < :to', { from, to })
+        .groupBy('key')
+        .getRawMany<{ key: string; count: string; amount: string }>(),
+    ]);
+
+    const revenueMap = new Map(revenueRows.map((r) => [r.key, r]));
+    const dealMap = new Map(dealRows.map((r) => [r.key, r]));
+
+    return {
+      period: query.period,
+      year: byYear ? null : year,
+      years,
+      points: keys.map((key) => ({
+        key,
+        revenue: num(revenueMap.get(key)?.amount),
+        paymentsCount: num(revenueMap.get(key)?.count),
+        newDealsCount: num(dealMap.get(key)?.count),
+        newDealsAmount: num(dealMap.get(key)?.amount),
+      })),
+    };
   }
 }

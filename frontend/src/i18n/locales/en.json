@@ -85,6 +85,30 @@
       "analytics": "Analyze sales and performance",
       "users": "Manage your team's users",
       "integrations": "API keys for external systems"
+    },
+    "sales": {
+      "title": "Sales over time",
+      "metricLabel": "Metric",
+      "metricRevenue": "Revenue",
+      "metricNewDeals": "New deals",
+      "bestMonth": "Best month:",
+      "empty": "No data for this period yet.",
+      "paymentsCount_one": "{{count}} payment",
+      "paymentsCount_other": "{{count}} payments",
+      "newDealsCount_one": "{{count}} new deal",
+      "newDealsCount_other": "{{count}} new deals",
+      "showTable": "Show as table",
+      "tableMonth": "Month",
+      "tablePayments": "Payments",
+      "tableNewDealsAmount": "New deals amount",
+      "periodLabel": "Period",
+      "byMonth": "By month",
+      "byYear": "By year",
+      "year": "Year",
+      "yearLabel": "{{year}}",
+      "bestYear": "Best year:",
+      "tableYear": "Year",
+      "drillHint": "Click a year to see it by month"
     }
   },
   "users": {

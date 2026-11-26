@@ -16,6 +16,7 @@
     "start:prod": "node dist/main",
     "seed:admin": "npm run build && node dist/seed/seed-admin.js",
     "seed:demo": "npm run build && node dist/seed/seed-demo-data.js",
+    "seed:history": "npm run build && node dist/seed/seed-history.js",
     "lint": "oxlint src/ test/",
     "test": "vitest run",
     "test:watch": "vitest",

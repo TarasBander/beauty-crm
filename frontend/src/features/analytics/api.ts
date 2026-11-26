@@ -8,6 +8,31 @@ export interface DealStageStat {
   amount: number;
 }
 
+export type SalesPeriod = 'month' | 'year';
+
+export interface SalesParams {
+  period: SalesPeriod;
+  year?: number;
+}
+
+// Одна точка діаграми продажів: місяць ('YYYY-MM') або рік ('YYYY').
+// revenue — оплачені платежі за датою оплати; newDeals* — угоди за
+// датою створення.
+export interface SalesPoint {
+  key: string;
+  revenue: number;
+  paymentsCount: number;
+  newDealsCount: number;
+  newDealsAmount: number;
+}
+
+export interface SalesReport {
+  period: SalesPeriod;
+  year: number | null;
+  years: number[]; // усі доступні роки, від 2020 до поточного
+  points: SalesPoint[];
+}
+
 export interface AnalyticsDashboard {
   clients: { total: number };
   deals: {
@@ -63,8 +88,15 @@ export interface AnalyticsDashboard {
 // ключів у features/clients/api.ts).
 export const analyticsKeys = {
   dashboard: ['analytics', 'dashboard'] as const,
+  sales: (params: SalesParams) => ['analytics', 'sales', params.period, params.year ?? null] as const,
 };
 
 export const analyticsApi = {
   getDashboard: (token: string) => request<AnalyticsDashboard>('/analytics/dashboard', { token }),
+
+  getSales: (token: string, params: SalesParams) => {
+    const query = new URLSearchParams({ period: params.period });
+    if (params.year !== undefined) query.set('year', String(params.year));
+    return request<SalesReport>(`/analytics/sales?${query}`, { token });
+  },
 };

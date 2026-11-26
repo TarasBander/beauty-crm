@@ -14,3 +14,9 @@ export function formatMoney(amount: number, language: string): string {
   }).format(amount)
   return language.startsWith('uk') ? `${formatted} грн` : `${formatted} UAH`
 }
+
+/** Коротка сума для осей і підписів діаграм: "178,3 тис." / "178.3K". */
+export function formatMoneyCompact(amount: number, language: string): string {
+  const locale = language.startsWith('uk') ? 'uk-UA' : 'en-US'
+  return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(amount)
+}

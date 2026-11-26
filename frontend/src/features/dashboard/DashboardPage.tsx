@@ -13,6 +13,7 @@ import { todayLocalISO } from '../../shared/utils/date'
 import { formatMoney } from '../../shared/utils/money'
 import { useAuth } from '../auth/AuthContext'
 import { useAnalyticsDashboard } from '../analytics/hooks'
+import { SalesChart } from './components/SalesChart'
 
 // roles: як і в Layout.tsx — undefined значить "плитка для всіх", інакше
 // показуємо лише переліченим ролям. Без цього плитка на /users вела б
@@ -105,6 +106,10 @@ export function DashboardPage() {
           </div>
         )}
       </div>
+
+      <Card title={t('dashboard.sales.title')}>
+        <SalesChart />
+      </Card>
 
       <Card title={t('dashboard.quickAccessTitle')}>
         <div className="dashboard-tiles">

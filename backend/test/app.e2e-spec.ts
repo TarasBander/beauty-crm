@@ -63,8 +63,9 @@ describe('App (e2e)', () => {
       .expect({ name: 'CRM backend', status: 'running' });
   });
 
-  it('rejects protected routes without a token', () => {
-    return request(app.getHttpServer()).get('/auth/me').expect(401);
+  it('rejects protected routes without a token', async () => {
+    await request(app.getHttpServer()).get('/auth/me').expect(401);
+    await request(app.getHttpServer()).get('/analytics/sales').expect(401);
   });
 
   it('rejects a wrong password', () => {
@@ -126,6 +127,46 @@ describe('App (e2e)', () => {
       expect(res.body.revenueByMonth).toHaveLength(6);
       expect(typeof res.body.clients.total).toBe('number');
       expect(typeof res.body.payments.totalPaid).toBe('number');
+    });
+
+    it('gets sales for one year by month', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/analytics/sales?period=month&year=2024')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+      expect(res.body.year).toBe(2024);
+      expect(res.body.points).toHaveLength(12);
+      expect(res.body.points[0]).toEqual({
+        key: '2024-01',
+        revenue: expect.any(Number),
+        paymentsCount: expect.any(Number),
+        newDealsCount: expect.any(Number),
+        newDealsAmount: expect.any(Number),
+      });
+    });
+
+    it('gets sales by year since 2020', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/analytics/sales?period=year')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+      const currentYear = new Date().getFullYear();
+      expect(res.body.years[0]).toBe(2020);
+      expect(res.body.years.at(-1)).toBe(currentYear);
+      expect(res.body.points.map((p: { key: string }) => p.key)).toEqual(
+        res.body.years.map(String),
+      );
+    });
+
+    it('rejects years outside 2020..current', async () => {
+      const server = app.getHttpServer();
+      const auth = { Authorization: `Bearer ${token}` };
+      await request(server).get('/analytics/sales?year=2019').set(auth).expect(400);
+      await request(server)
+        .get(`/analytics/sales?year=${new Date().getFullYear() + 1}`)
+        .set(auth)
+        .expect(400);
+      await request(server).get('/analytics/sales?period=week').set(auth).expect(400);
     });
 
     it('loses access as soon as the account is deactivated', async () => {

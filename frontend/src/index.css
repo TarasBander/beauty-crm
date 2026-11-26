@@ -62,6 +62,10 @@
 
   --pattern-color: rgba(13, 127, 128, 0.09);
 
+  /* діаграми: колір серії перевірено dataviz-валідатором (light, на --color-surface) */
+  --chart-series: #009a94;
+  --chart-grid: #e2eeec;
+
   /* ілюстрація (BeautyIllustration.tsx) */
   --illu-teal: #23a5a1;
   --illu-teal-soft: #c4ebe6;
@@ -114,6 +118,10 @@
   --focus-ring: 0 0 0 3px rgba(72, 200, 193, 0.35);
 
   --pattern-color: rgba(72, 200, 193, 0.06);
+
+  /* діаграми: перевірено dataviz-валідатором (dark, на --color-surface) */
+  --chart-series: #25a8a1;
+  --chart-grid: #1f3a3c;
 
   --illu-teal: #2fb2ac;
   --illu-teal-soft: #19403f;
