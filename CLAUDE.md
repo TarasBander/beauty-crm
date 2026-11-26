@@ -41,6 +41,12 @@ Before saying backend work is done: lint + tsc + `npm test` + `npm run test:e2e`
 - Backend e2e (`backend/test/app.e2e-spec.ts`) runs against the real dev DB, creates its own throwaway users and deletes them in `afterAll`. New auth or role rules get an e2e case there.
 - The login rate limit is 10 requests per IP per 15 minutes, in memory. Many logins in one e2e run will hit it.
 
+## Claude hooks (`.claude/settings.json`)
+
+- Writes to real `.env` files are blocked, whether through Edit/Write or Bash (`>`, `tee`, `sed -i`, `cp`, …).
+- `git commit` / `git push` first run lint + unit tests for each touched workspace (`.claude/hooks/git-checks.sh`), and are blocked if they fail or a `.env` would be included.
+- `git push` also runs a senior-FE review agent over the frontend diff (re-renders, a11y, XSS). It blocks only real problems; fix what it reports instead of working around it.
+
 ## Priorities
 
 Hardening comes before features. Do not add a new CRM module while open items remain: `ParseUUIDPipe` on all `:id` params, a Playwright smoke test, real pagination for the 100-card kanban, and server-side search everywhere.

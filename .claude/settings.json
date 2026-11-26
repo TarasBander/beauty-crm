@@ -19,11 +19,30 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Bash",
         "hooks": [
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-env.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/git-checks.sh",
+            "timeout": 300,
+            "statusMessage": "lint + tests before git commit/push"
+          },
+          {
+            "type": "agent",
+            "if": "Bash(git push*)",
+            "model": "claude-sonnet-5-5",
+            "timeout": 600,
+            "statusMessage": "Senior FE review of the push diff",
+            "prompt": "You are a senior frontend engineer (React 19, TypeScript, TanStack Query) reviewing code right before it is pushed to this repo. The pending Bash call is: $ARGUMENTS\n\n1. Find what will be pushed: run `git rev-parse --abbrev-ref --symbolic-full-name @{u}` (fall back to origin/main), then `git diff <upstream>...HEAD -- frontend/`. If that diff is empty, answer ok immediately.\n2. Read the changed files fully where the diff alone is not enough context.\n3. Review ONLY the changed lines for:\n   - Unnecessary re-renders: unstable object/array/function props or context values created every render and passed to memoized children or used in effect deps; effects that set state synchronously; missing or wrong dependency arrays; derived state stored in useState; React Query keys built from new objects every render; heavy work in render without useMemo where it matters.\n   - Accessibility: interactive elements that are not buttons/links, icon-only buttons without an accessible name, inputs without labels, images/SVG without alt or aria-hidden, missing aria-expanded/aria-controls on toggles, focus traps or lost focus, keyboard-unreachable controls, colour-only signals, aria-label text not going through i18next.\n   - XSS / injection: dangerouslySetInnerHTML, innerHTML/outerHTML/insertAdjacentHTML, href/src built from user or API data without restricting the scheme (javascript:), window.open/location with untrusted URLs, eval/new Function, rendering API HTML, tokens or secrets logged or put in URLs.\n4. Decide. Block (ok=false) only for real problems: any XSS risk, an accessibility defect that makes a control unusable by keyboard or screen reader, or a re-render bug that causes loops or clearly wasted work on every render. Style nits and speculative concerns do NOT block.\n\nIf blocking, the reason must list each problem as `file:line — what is wrong — how to fix`. If not blocking, still put at most 5 short non-blocking suggestions in the reason (or 'No issues found')."
           }
         ]
       }
