@@ -5,11 +5,11 @@ import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
+import { Pagination } from '../../shared/components/Pagination'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { todayLocalISO } from '../../shared/utils/date'
 import { formatMoney } from '../../shared/utils/money'
-import { isListCapped } from '../../shared/utils/pagination'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
 import { useDeals } from '../deals/hooks'
@@ -17,28 +17,26 @@ import { PaymentForm } from './components/PaymentForm'
 import { PaymentTable } from './components/PaymentTable'
 import { emptyPaymentForm, toCreatePaymentDto, type PaymentFormValues } from './paymentForm'
 import type { Payment } from './api'
-import { exportAllPayments, useAllPayments, useCreatePayment, useUpdatePayment } from './hooks'
-
-// A stable reference for the "no data yet" fallback — see TasksPage's
-// EMPTY_TASKS for why this matters for the useMemo below.
-const EMPTY_PAYMENTS: Payment[] = []
+import { exportAllPayments, useCreatePayment, usePayments, useUpdatePayment } from './hooks'
 
 export function PaymentsPage() {
   const { token } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const paymentsQuery = useAllPayments()
+  const [page, setPage] = useState(1)
+  const paymentsQuery = usePayments({ page })
   // Легкий запит лише щоб дізнатись, чи є взагалі хоч одна угода (для
   // підказки "спершу створіть угоду") — не 100 угод заради однієї
   // перевірки "> 0", як було раніше через useAllDeals().
   const hasDealsQuery = useDeals({ limit: 1 })
-  // Отримано/очікується — з /analytics/dashboard, пораховане з УСІХ
-  // платежів у базі, а не з capped paymentsQuery (SELECT_PAGE_SIZE=100).
+  // Отримано/очікується — з /analytics/dashboard, по всіх платежах у
+  // базі, а не лише з поточної сторінки таблиці.
   const analyticsQuery = useAnalyticsDashboard()
   const createPayment = useCreatePayment()
   const updatePayment = useUpdatePayment()
 
-  const payments = paymentsQuery.data?.data ?? EMPTY_PAYMENTS
+  const payments = paymentsQuery.data?.data ?? []
+  const meta = paymentsQuery.data?.meta
   const hasDeals = (hasDealsQuery.data?.meta.total ?? 0) > 0
 
   const [form, setForm] = useState<PaymentFormValues>(emptyPaymentForm)
@@ -147,11 +145,6 @@ export function PaymentsPage() {
         {exportWarning && <Banner>{exportWarning}</Banner>}
         {exportError && <FormError>{exportError}</FormError>}
         {markPaidError && <FormError>{markPaidError}</FormError>}
-        {isListCapped(paymentsQuery.data?.meta, payments.length) && (
-          <Banner>
-            {t('common.incompleteData', { loaded: payments.length, total: paymentsQuery.data?.meta.total })}
-          </Banner>
-        )}
         <QueryStatus
           query={paymentsQuery}
           loadingText={t('payments.loading')}
@@ -165,6 +158,9 @@ export function PaymentsPage() {
             markingPaidId={markingPaidId}
             onMarkPaid={markPaid}
           />
+          {meta && (
+            <Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} onPageChange={setPage} />
+          )}
         </QueryStatus>
       </Card>
     </Page>

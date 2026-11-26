@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { fetchAllPages } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
 import { useAuthenticatedToken } from '../auth/AuthContext'
-import { taskKeys, tasksApi, type CreateTaskDto, type Task, type UpdateTaskDto } from './api'
+import { taskKeys, tasksApi, type CreateTaskDto, type Task, type TaskListParams, type UpdateTaskDto } from './api'
 
-// useQuery — одна сторінка задач.
-export function useTasks(params: PaginationParams = {}) {
+// useQuery — одна сторінка задач (з фільтром за статусом, якщо заданий).
+export function useTasks(params: TaskListParams = {}) {
   const token = useAuthenticatedToken()
   return useQuery({
     queryKey: taskKeys.list(params),
@@ -15,18 +15,6 @@ export function useTasks(params: PaginationParams = {}) {
   })
 }
 
-/**
- * Список задач на сторінці "Задачі" — той самий useTasks() зверху з
- * limit = SELECT_PAGE_SIZE (100). Лічильники на вкладках
- * (активні/виконані/усі) з цього списку більше НЕ рахуються — вони
- * йдуть з /analytics/dashboard (рахує з УСІХ задач), TasksPage передає
- * їх у TaskFilterTabs напряму. Цей хук лишається лише джерелом рядків
- * самої таблиці; якщо задач більше, ніж завантажено, TasksPage показує
- * банер (дивись Banner.tsx), а не мовчить про різницю.
- */
-export function useAllTasks() {
-  return useTasks({ page: 1, limit: SELECT_PAGE_SIZE })
-}
 
 // useMutation — створення задачі, інвалідуємо закешовані списки задач.
 export function useCreateTask() {

@@ -30,7 +30,6 @@
     "searching": "Searching…",
     "typeToSearch": "Type to search…",
     "noResults": "No matches",
-    "incompleteData": "Showing {{loaded}} of {{total}}. Totals may be incomplete.",
     "exportTruncated": "Exported the first {{count}} of {{total}} rows — the file is incomplete.",
     "pagination": {
       "prev": "Previous",
@@ -191,7 +190,6 @@
     "createError": "Failed to create deal",
     "stageChangeError": "Failed to move the deal to another stage",
     "emptyColumn": "No deals",
-    "cardsIncomplete": "Showing {{loaded}} of {{total}} deals in this stage — the rest haven't loaded yet.",
     "pipelineTitle": "Deal stages",
     "carousel": {
       "prev": "Previous stage",

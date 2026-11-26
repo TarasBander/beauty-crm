@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { fetchAllPages } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
 import { useAuthenticatedToken } from '../auth/AuthContext'
-import { dealKeys, dealsApi, type CreateDealDto, type Deal, type UpdateDealDto } from './api'
+import { dealKeys, dealsApi, type CreateDealDto, type Deal, type DealListParams, type UpdateDealDto } from './api'
 
 // useQuery — одна сторінка угод, кеш-ключ включає параметри пагінації
 // (як і в useClients вище).
-export function useDeals(params: PaginationParams = {}) {
+export function useDeals(params: DealListParams = {}) {
   const token = useAuthenticatedToken()
   return useQuery({
     queryKey: dealKeys.list(params),
@@ -16,21 +16,6 @@ export function useDeals(params: PaginationParams = {}) {
   })
 }
 
-/**
- * Картки канбану — це той самий useDeals() зверху з limit =
- * SELECT_PAGE_SIZE (100, максимум бекенду), тож видно щонайбільше 100
- * карток одразу. Раніше з цього ж капованого списку рахувались і суми
- * по стадіях — тепер ні: кількість і сума на кожній стадії (DealBoard,
- * kanban-tab-count/kanban-column-total) беруться з
- * /analytics/dashboard, який рахує з УСІХ угод у базі, а не з цих 100.
- * Сам капований список тут лишається лише джерелом карток, які реально
- * рендеряться в колонці — якщо їх на стадії більше, ніж завантажено,
- * DealsPage і DealBoard показують про це банер (дивись Banner.tsx),
- * а не мовчать.
- */
-export function useAllDeals() {
-  return useDeals({ page: 1, limit: SELECT_PAGE_SIZE })
-}
 
 // useMutation — створення угоди, після успіху інвалідуємо всі закешовані
 // списки угод (так само, як useCreateClient).

@@ -158,6 +158,21 @@ describe('App (e2e)', () => {
       );
     });
 
+    it('filters tasks by status and deals by stage on the server', async () => {
+      const server = app.getHttpServer();
+      const auth = { Authorization: `Bearer ${token}` };
+
+      const done = await request(server).get('/tasks?status=done&limit=100').set(auth).expect(200);
+      expect(done.body.data.every((task: { status: string }) => task.status === 'done')).toBe(true);
+
+      const won = await request(server).get('/deals?stage=won&limit=5').set(auth).expect(200);
+      expect(won.body.meta.limit).toBe(5);
+      expect(won.body.data.every((deal: { stage: string }) => deal.stage === 'won')).toBe(true);
+
+      await request(server).get('/tasks?status=bogus').set(auth).expect(400);
+      await request(server).get('/deals?stage=bogus').set(auth).expect(400);
+    });
+
     it('rejects years outside 2020..current', async () => {
       const server = app.getHttpServer();
       const auth = { Authorization: `Bearer ${token}` };

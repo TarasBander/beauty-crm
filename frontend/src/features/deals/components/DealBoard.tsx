@@ -1,22 +1,22 @@
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Banner } from '../../../shared/components/Banner'
+import type { PaginationMeta } from '../../../shared/api/http'
+import { Pagination } from '../../../shared/components/Pagination'
 import { DEAL_STAGE_ORDER, type Deal, type DealStage } from '../api'
 import type { DealStageStat } from '../../analytics/api'
 
 interface DealBoardProps {
+  /** Одна сторінка карток АКТИВНОЇ стадії (DealsPage вантажить кожну стадію окремо). */
   deals: Deal[]
-  // Кількість і сума по кожній стадії — з /analytics/dashboard, а НЕ
-  // порахована тут із `deals`. `deals` — це капований список (до
-  // SELECT_PAGE_SIZE = 100 карток на всі стадії разом), тож рахувати
-  // "суму по стадії" з нього означало б показувати занижену суму, щойно
-  // угод стає більше за ліміт. Аналітика бекенду рахує з УСІХ угод у
-  // базі, тож ці числа завжди точні, навіть коли карток під ними
-  // видно менше (дивись stageStats нижче).
+  // Кількість і сума по кожній стадії — з /analytics/dashboard, по всіх
+  // угодах у базі (а не з однієї сторінки карток).
   stageStats: DealStageStat[]
   activeStageIndex: number
   onActiveStageIndexChange: (index: number) => void
+  pageMeta: PaginationMeta | undefined
+  onPageChange: (page: number) => void
+  /** true, поки вантажиться інша стадія чи сторінка — на екрані ще попередні картки. */
+  isStageLoading: boolean
   movingDealId: string | null
   onStageChange: (deal: Deal, stage: DealStage) => void
   formatAmount: (amount: number) => string
@@ -38,6 +38,9 @@ interface KanbanColumnProps {
   stage: DealStage
   deals: Deal[]
   stats: DealStageStat
+  pageMeta: PaginationMeta | undefined
+  onPageChange: (page: number) => void
+  isLoading: boolean
   movingDealId: string | null
   onStageChange: (deal: Deal, stage: DealStage) => void
   formatAmount: (amount: number) => string
@@ -51,16 +54,26 @@ interface KanbanColumnProps {
  * і DealBoard нижче лишається тонким — вибір активної стадії плюс
  * рендер однієї колонки.
  */
-function KanbanColumn({ stage, deals, stats, movingDealId, onStageChange, formatAmount }: KanbanColumnProps) {
+function KanbanColumn({
+  stage,
+  deals,
+  stats,
+  pageMeta,
+  onPageChange,
+  isLoading,
+  movingDealId,
+  onStageChange,
+  formatAmount,
+}: KanbanColumnProps) {
   const { t } = useTranslation()
-  // Скільки карток цієї стадії реально завантажено проти скільки їх
-  // насправді є (за аналітикою) — якщо картки не всі, кажемо про це
-  // прямо замість того, щоб мовчки показати неповний стовпець.
-  const cardsMissing = stats.count > deals.length
+  // Картка, яку щойно перевели в іншу стадію, зникає з колонки одразу
+  // (оптимістичне оновлення), не чекаючи перезавантаження сторінки.
+  const cards = deals.filter((deal) => deal.stage === stage)
 
   return (
     <div
-      className="kanban-column kanban-column-active"
+      className={isLoading ? 'kanban-column kanban-column-active is-stale' : 'kanban-column kanban-column-active'}
+      aria-busy={isLoading}
       role="tabpanel"
       id={TABPANEL_ID}
       aria-labelledby={tabId(stage)}
@@ -71,12 +84,11 @@ function KanbanColumn({ stage, deals, stats, movingDealId, onStageChange, format
         <span className="kanban-column-count">{stats.count}</span>
       </div>
       {stats.count > 0 && <div className="kanban-column-total">{formatAmount(stats.amount)}</div>}
-      {cardsMissing && (
-        <Banner>{t('deals.cardsIncomplete', { loaded: deals.length, total: stats.count })}</Banner>
+      {cards.length === 0 && (
+        <p className="kanban-empty">{isLoading ? t('deals.loading') : t('deals.emptyColumn')}</p>
       )}
-      {deals.length === 0 && <p className="kanban-empty">{t('deals.emptyColumn')}</p>}
       <div className="kanban-column-cards">
-        {deals.map((deal) => (
+        {cards.map((deal) => (
           <div key={deal.id} className="kanban-card">
             <div className="kanban-card-title">{deal.title}</div>
             <div className="kanban-card-amount">{formatAmount(deal.amount)}</div>
@@ -100,6 +112,14 @@ function KanbanColumn({ stage, deals, stats, movingDealId, onStageChange, format
           </div>
         ))}
       </div>
+      {pageMeta && (
+        <Pagination
+          page={pageMeta.page}
+          totalPages={pageMeta.totalPages}
+          total={pageMeta.total}
+          onPageChange={onPageChange}
+        />
+      )}
     </div>
   )
 }
@@ -109,27 +129,14 @@ export function DealBoard({
   stageStats,
   activeStageIndex,
   onActiveStageIndexChange,
+  pageMeta,
+  onPageChange,
+  isStageLoading,
   movingDealId,
   onStageChange,
   formatAmount,
 }: DealBoardProps) {
   const { t } = useTranslation()
-
-  // Раніше `deals.filter((d) => d.stage === stage)` рахувалось заново
-  // щоразу, коли викликали dealsByStage(stage) — на цей рендер лише
-  // раз (для активної стадії), але при кожному рендері DealBoard. Тепер
-  // один прохід по deals на рендер, згрупований одразу по всіх стадіях
-  // — переключення вкладки бере вже готовий масив, не фільтрує повторно.
-  const dealsByStage = useMemo(() => {
-    const grouped = Object.fromEntries(DEAL_STAGE_ORDER.map((stage) => [stage, [] as Deal[]])) as Record<
-      DealStage,
-      Deal[]
-    >
-    for (const deal of deals) {
-      grouped[deal.stage].push(deal)
-    }
-    return grouped
-  }, [deals])
 
   const statsFor = (stage: DealStage) =>
     stageStats.find((s) => s.stage === stage) ?? { stage, count: 0, amount: 0 }
@@ -172,8 +179,11 @@ export function DealBoard({
 
         <KanbanColumn
           stage={activeStage}
-          deals={dealsByStage[activeStage]}
+          deals={deals}
           stats={statsFor(activeStage)}
+          pageMeta={pageMeta}
+          onPageChange={onPageChange}
+          isLoading={isStageLoading}
           movingDealId={movingDealId}
           onStageChange={onStageChange}
           formatAmount={formatAmount}

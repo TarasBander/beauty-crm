@@ -1,14 +1,14 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiError, messageFrom } from '../../shared/api/http'
 import { Banner } from '../../shared/components/Banner'
 import { Card } from '../../shared/components/Card'
 import { FormError } from '../../shared/components/FormError'
 import { Page } from '../../shared/components/Page'
+import { Pagination } from '../../shared/components/Pagination'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { todayLocalISO } from '../../shared/utils/date'
-import { isListCapped } from '../../shared/utils/pagination'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
 import { useAllUsers } from '../users/hooks'
@@ -16,30 +16,28 @@ import { TaskFilterTabs } from './components/TaskFilterTabs'
 import { TaskForm } from './components/TaskForm'
 import { TaskTable } from './components/TaskTable'
 import { emptyTaskForm, toCreateTaskDto, type TaskFormValues } from './taskForm'
-import { filterAndSortTasks, type TaskFilter } from './taskFilter'
+import { taskFilterToStatus, type TaskFilter } from './taskFilter'
 import type { Task } from './api'
-import { exportAllTasks, useAllTasks, useCreateTask, useUpdateTask } from './hooks'
-
-// A stable reference for the "no data yet" fallback — `data ?? []` would
-// otherwise create a brand-new array every render, which the useMemo
-// below would then see as "changed" on every single render.
-const EMPTY_TASKS: Task[] = []
+import { exportAllTasks, useCreateTask, useTasks, useUpdateTask } from './hooks'
 
 export function TasksPage() {
   const { token, user } = useAuth()
   const { t } = useTranslation()
 
-  const tasksQuery = useAllTasks()
+  // Фільтр за вкладкою і сортування — на бекенді, тож кожна сторінка
+  // таблиці показує саме ті задачі, що мають бути на ній.
+  const [filter, setFilter] = useState<TaskFilter>('active')
+  const [page, setPage] = useState(1)
+  const tasksQuery = useTasks({ page, status: taskFilterToStatus(filter) })
   const managersQuery = useAllUsers()
-  // Точні лічильники для вкладок (активні/виконані/усі) — з
-  // /analytics/dashboard, а не порахована тут із capped tasksQuery
-  // (SELECT_PAGE_SIZE = 100). Сам список у таблиці нижче все ще читає
-  // tasksQuery — банер під таблицею попереджає, якщо він неповний.
+  // Лічильники на вкладках (активні/виконані/усі) — з /analytics/dashboard,
+  // по всіх задачах, а не лише з поточної сторінки.
   const analyticsQuery = useAnalyticsDashboard()
   const createTask = useCreateTask()
   const updateTask = useUpdateTask()
 
-  const tasks = tasksQuery.data?.data ?? EMPTY_TASKS
+  const tasks = tasksQuery.data?.data ?? []
+  const meta = tasksQuery.data?.meta
   const managers = managersQuery.data?.data ?? []
 
   const [form, setForm] = useState<TaskFormValues>(emptyTaskForm)
@@ -48,7 +46,10 @@ export function TasksPage() {
   const [exportWarning, setExportWarning] = useState<string | null>(null)
   const [exportError, setExportError] = useState<string | null>(null)
 
-  const [filter, setFilter] = useState<TaskFilter>('active')
+  const changeFilter = (next: TaskFilter) => {
+    setFilter(next)
+    setPage(1)
+  }
   const [togglingTaskId, setTogglingTaskId] = useState<string | null>(null)
   const [toggleError, setToggleError] = useState<string | null>(null)
 
@@ -80,8 +81,6 @@ export function TasksPage() {
 
   const today = todayLocalISO()
 
-  const visibleTasks = useMemo(() => filterAndSortTasks(tasks, filter), [tasks, filter])
-
   const exportTasks = async () => {
     if (!token) return
     setIsExporting(true)
@@ -110,9 +109,9 @@ export function TasksPage() {
     }
   }
 
-  const activeCount = analyticsQuery.data?.tasks.pending ?? tasks.filter((task) => task.status === 'pending').length
-  const doneCount = analyticsQuery.data?.tasks.done ?? tasks.filter((task) => task.status === 'done').length
-  const totalCount = analyticsQuery.data?.tasks.total ?? tasks.length
+  const activeCount = analyticsQuery.data?.tasks.pending ?? 0
+  const doneCount = analyticsQuery.data?.tasks.done ?? 0
+  const totalCount = analyticsQuery.data?.tasks.total ?? meta?.total ?? 0
 
   return (
     <Page title={t('tasks.title')}>
@@ -134,12 +133,12 @@ export function TasksPage() {
           <>
             <TaskFilterTabs
               filter={filter}
-              onFilterChange={setFilter}
+              onFilterChange={changeFilter}
               activeCount={activeCount}
               doneCount={doneCount}
               totalCount={totalCount}
             />
-            {visibleTasks.length > 0 && (
+            {totalCount > 0 && (
               <button type="button" onClick={exportTasks} disabled={isExporting}>
                 {t('common.exportCsv')}
               </button>
@@ -150,17 +149,17 @@ export function TasksPage() {
         {exportWarning && <Banner>{exportWarning}</Banner>}
         {exportError && <FormError>{exportError}</FormError>}
         {toggleError && <FormError>{toggleError}</FormError>}
-        {isListCapped(tasksQuery.data?.meta, tasks.length) && (
-          <Banner>{t('common.incompleteData', { loaded: tasks.length, total: tasksQuery.data?.meta.total })}</Banner>
-        )}
         <QueryStatus
           query={tasksQuery}
           loadingText={t('tasks.loading')}
           errorFallback={t('tasks.loadError')}
-          isEmpty={visibleTasks.length === 0}
+          isEmpty={tasks.length === 0}
           emptyText={t('tasks.empty')}
         >
-          <TaskTable tasks={visibleTasks} today={today} togglingTaskId={togglingTaskId} onToggleDone={toggleDone} />
+          <TaskTable tasks={tasks} today={today} togglingTaskId={togglingTaskId} onToggleDone={toggleDone} />
+          {meta && (
+            <Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} onPageChange={setPage} />
+          )}
         </QueryStatus>
       </Card>
     </Page>

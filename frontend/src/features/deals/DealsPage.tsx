@@ -8,7 +8,6 @@ import { Page } from '../../shared/components/Page'
 import { QueryStatus } from '../../shared/components/QueryStatus'
 import { downloadCsv } from '../../shared/utils/csv'
 import { formatMoney } from '../../shared/utils/money'
-import { isListCapped } from '../../shared/utils/pagination'
 import { useAnalyticsDashboard } from '../analytics/hooks'
 import { useAuth } from '../auth/AuthContext'
 import { useClients } from '../clients/hooks'
@@ -16,14 +15,27 @@ import { useAllUsers } from '../users/hooks'
 import { DealBoard } from './components/DealBoard'
 import { DealForm } from './components/DealForm'
 import { emptyDealForm, toCreateDealDto, type DealFormValues } from './dealForm'
-import type { Deal, DealStage } from './api'
-import { exportAllDeals, useAllDeals, useCreateDeal, useUpdateDeal } from './hooks'
+import { DEAL_STAGE_ORDER, type Deal, type DealStage } from './api'
+import { exportAllDeals, useCreateDeal, useDeals, useUpdateDeal } from './hooks'
+
+// Карток на одну сторінку колонки канбану.
+const KANBAN_PAGE_SIZE = 20
 
 export function DealsPage() {
   const { token, user } = useAuth()
   const { t, i18n } = useTranslation()
 
-  const dealsQuery = useAllDeals()
+  // the pipeline is shown as a carousel — one stage at a time — instead
+  // of a row of six columns, which reads much better on narrow screens
+  // and keeps focus on one stage at a time. Each stage is loaded (and
+  // paginated) on its own, so every card of every stage is reachable.
+  const [activeStageIndex, setActiveStageIndex] = useState(0)
+  const [stagePage, setStagePage] = useState(1)
+  const dealsQuery = useDeals({
+    stage: DEAL_STAGE_ORDER[activeStageIndex],
+    page: stagePage,
+    limit: KANBAN_PAGE_SIZE,
+  })
   // Легкий запит лише щоб дізнатись, чи є взагалі хоч один клієнт (для
   // підказки "спершу додайте клієнта") — не 100 клієнтів заради однієї
   // перевірки "> 0", як було раніше через useAllClients().
@@ -34,6 +46,7 @@ export function DealsPage() {
   const updateDeal = useUpdateDeal()
 
   const deals = dealsQuery.data?.data ?? []
+  const hasAnyDeals = (analyticsQuery.data?.deals.totalCount ?? deals.length) > 0
   const managers = managersQuery.data?.data ?? []
   const hasClients = (hasClientsQuery.data?.meta.total ?? 0) > 0
 
@@ -48,10 +61,10 @@ export function DealsPage() {
   const [movingDealId, setMovingDealId] = useState<string | null>(null)
   const [stageError, setStageError] = useState<string | null>(null)
 
-  // the pipeline is shown as a carousel — one stage at a time — instead
-  // of a row of six columns, which reads much better on narrow screens
-  // and keeps focus on one stage at a time
-  const [activeStageIndex, setActiveStageIndex] = useState(0)
+  const changeStage = (index: number) => {
+    setActiveStageIndex(index)
+    setStagePage(1)
+  }
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -129,7 +142,7 @@ export function DealsPage() {
           title={t('deals.pipelineTitle')}
           className="kanban-carousel"
           actions={
-            deals.length > 0 && (
+            hasAnyDeals && (
               <button type="button" onClick={exportDeals} disabled={isExporting}>
                 {t('common.exportCsv')}
               </button>
@@ -139,16 +152,14 @@ export function DealsPage() {
           {exportWarning && <Banner>{exportWarning}</Banner>}
           {exportError && <FormError>{exportError}</FormError>}
           {stageError && <FormError>{stageError}</FormError>}
-          {isListCapped(dealsQuery.data?.meta, deals.length) && (
-            <Banner>
-              {t('common.incompleteData', { loaded: deals.length, total: dealsQuery.data?.meta.total })}
-            </Banner>
-          )}
           <DealBoard
             deals={deals}
             stageStats={analyticsQuery.data?.deals.byStage ?? []}
             activeStageIndex={activeStageIndex}
-            onActiveStageIndexChange={setActiveStageIndex}
+            onActiveStageIndexChange={changeStage}
+            pageMeta={dealsQuery.data?.meta}
+            onPageChange={setStagePage}
+            isStageLoading={dealsQuery.isPlaceholderData}
             movingDealId={movingDealId}
             onStageChange={handleStageChange}
             formatAmount={formatAmount}

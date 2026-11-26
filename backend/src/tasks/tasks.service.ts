@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, type FindOptionsOrder } from 'typeorm';
 import { ClientsService } from '../clients/clients.service.js';
 import type { PaginatedResult } from '../common/dto/paginated-result.interface.js';
-import type { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
 import { TaskStatus } from '../common/enums/task-status.enum.js';
 import { paginate } from '../common/pagination.util.js';
 import { DealsService } from '../deals/deals.service.js';
 import { CreateTaskDto } from './dto/create-task.dto.js';
+import type { ListTasksQueryDto } from './dto/list-tasks-query.dto.js';
 import { UpdateTaskDto } from './dto/update-task.dto.js';
 import { Task } from './entities/task.entity.js';
 
@@ -60,8 +60,27 @@ export class TasksService {
     return this.findById(id);
   }
 
-  findAllPaginated(query: PaginationQueryDto): Promise<PaginatedResult<Task>> {
-    return paginate(this.tasksRepository, query, { order: { createdAt: 'DESC' } });
+  /**
+   * Sorted in the database (not in the browser) so every page is in the
+   * right place: active tasks by due date, undated ones last; done tasks
+   * newest first. Without a status filter, active tasks come first (the
+   * enum is declared pending → done, and Postgres sorts enums in that
+   * order).
+   */
+  findAllPaginated(query: ListTasksQueryDto): Promise<PaginatedResult<Task>> {
+    const byDueDate: FindOptionsOrder<Task> = {
+      dueDate: { direction: 'ASC', nulls: 'LAST' },
+      createdAt: 'DESC',
+    };
+    let order: FindOptionsOrder<Task>;
+    if (query.status === TaskStatus.DONE) order = { updatedAt: 'DESC' };
+    else if (query.status === TaskStatus.PENDING) order = byDueDate;
+    else order = { status: 'ASC', ...byDueDate };
+
+    return paginate(this.tasksRepository, query, {
+      where: query.status ? { status: query.status } : undefined,
+      order,
+    });
   }
 
   async findById(id: string): Promise<Task> {

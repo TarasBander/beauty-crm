@@ -44,9 +44,11 @@ export type UpdateDealDto = Partial<CreateDealDto>;
 
 /** `clientId` narrows the list to one client's deals — used by the deal
  * combobox in TaskForm, which already knows which client the task is
- * for and shouldn't offer deals belonging to someone else. */
+ * for and shouldn't offer deals belonging to someone else. `stage` — one
+ * kanban column, loaded and paginated on its own. */
 export interface DealListParams extends PaginationParams {
   clientId?: string;
+  stage?: DealStage;
 }
 
 // Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
@@ -54,7 +56,7 @@ export interface DealListParams extends PaginationParams {
 export const dealKeys = {
   all: ['deals'] as const,
   lists: () => [...dealKeys.all, 'list'] as const,
-  list: (params: PaginationParams) => [...dealKeys.lists(), params] as const,
+  list: (params: DealListParams) => [...dealKeys.lists(), params] as const,
   details: () => [...dealKeys.all, 'detail'] as const,
   detail: (id: string) => [...dealKeys.details(), id] as const,
 };

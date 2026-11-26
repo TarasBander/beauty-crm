@@ -1,4 +1,5 @@
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { DealStage } from '../../common/enums/deal-stage.enum.js';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto.js';
 
 /**
@@ -11,4 +12,9 @@ export class ListDealsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   clientId?: string;
+
+  /** One pipeline stage — the kanban loads and paginates each column separately. */
+  @IsOptional()
+  @IsEnum(DealStage)
+  stage?: DealStage;
 }

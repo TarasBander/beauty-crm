@@ -69,10 +69,11 @@ export class DealsService {
   findAllPaginated(query: ListDealsQueryDto): Promise<PaginatedResult<Deal>> {
     const search = query.search?.trim();
     let where: FindOptionsWhere<Deal> | undefined;
-    if (search || query.clientId) {
+    if (search || query.clientId || query.stage) {
       where = {};
       if (search) where.title = ILike(`%${escapeLikeTerm(search)}%`);
       if (query.clientId) where.clientId = query.clientId;
+      if (query.stage) where.stage = query.stage;
     }
     return paginate(this.dealsRepository, query, { where, order: { createdAt: 'DESC' } });
   }

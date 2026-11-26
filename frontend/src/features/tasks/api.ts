@@ -38,14 +38,19 @@ export type UpdateTaskDto = Partial<CreateTaskDto>;
 
 // Фабрика ключів кешу для useQuery — той самий патерн, що й clientKeys
 // у features/clients/api.ts (дивись коментар там).
+/** `status` — вкладки "активні/виконані" на TasksPage; фільтрує й сортує бекенд. */
+export interface TaskListParams extends PaginationParams {
+  status?: TaskStatus;
+}
+
 export const taskKeys = {
   all: ['tasks'] as const,
   lists: () => [...taskKeys.all, 'list'] as const,
-  list: (params: PaginationParams) => [...taskKeys.lists(), params] as const,
+  list: (params: TaskListParams) => [...taskKeys.lists(), params] as const,
 };
 
 export const tasksApi = {
-  list: (token: string, params: PaginationParams = {}) =>
+  list: (token: string, params: TaskListParams = {}) =>
     request<PaginatedResult<Task>>(`/tasks${toQueryString(params)}`, { token }),
 
   create: (token: string, dto: CreateTaskDto) =>

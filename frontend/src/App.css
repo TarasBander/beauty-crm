@@ -837,6 +837,15 @@ button.sidebar-link:hover:not(:disabled) {
   gap: 0.6rem;
 }
 
+.kanban-column.is-stale {
+  opacity: 0.55;
+}
+
+.kanban-column .pagination {
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 .kanban-column-active {
   flex: 1 1 auto;
   width: 100%;

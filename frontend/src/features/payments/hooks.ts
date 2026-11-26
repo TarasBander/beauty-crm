@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { SELECT_PAGE_SIZE, fetchAllPages, type PaginationParams } from '../../shared/api/http'
+import { fetchAllPages, type PaginationParams } from '../../shared/api/http'
 import { analyticsKeys } from '../analytics/api'
 import { useAuthenticatedToken } from '../auth/AuthContext'
 import {
@@ -21,18 +21,6 @@ export function usePayments(params: PaginationParams = {}) {
   })
 }
 
-/**
- * Список платежів на сторінці "Платежі" — той самий usePayments()
- * зверху з limit = SELECT_PAGE_SIZE (100). Смуга "отримано/очікується"
- * з цього списку більше НЕ рахується — вона йде з
- * /analytics/dashboard (payments.totalPaid/totalPending, рахує з УСІХ
- * платежів). Цей хук лишається лише джерелом рядків самої таблиці;
- * якщо платежів більше, ніж завантажено, PaymentsPage показує банер
- * (дивись Banner.tsx), а не мовчить про різницю.
- */
-export function useAllPayments() {
-  return usePayments({ page: 1, limit: SELECT_PAGE_SIZE })
-}
 
 // useMutation — створення платежу, інвалідуємо закешовані списки.
 export function useCreatePayment() {
